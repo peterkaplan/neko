@@ -1,7 +1,9 @@
 import { Box } from "./Box";
 import { Tile } from "./Tile";
+import { Wall } from "./Wall";
+
 import { Character } from "./Character";
-import { BOARD_SIZE, TILE_SIZE } from '../utils/Constants';
+import { BOARD_HEIGHT, BOARD_LENGTH, TILE_SIZE } from '../utils/Constants';
 
 interface Position {
     x: number;
@@ -12,22 +14,19 @@ export class GameBoard {
     private scene: Phaser.Scene;
     private x: number;
     private y: number;
-    private BOARD_SIZE: number;
-    private board: Phaser.GameObjects.Rectangle;
     private boxes: Box[];
-    private tiles: Tile[][] = [];
-    private character?: Character;
+    private walls: Wall[];
+    private tiles: (Tile|Wall)[][] = [];
+    private character: Character;
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         this.scene = scene;
         this.x = x; // x position of the top-left corner
         this.y = y; // y position of the top-left corner
-        this.BOARD_SIZE = BOARD_SIZE * TILE_SIZE; // 20x20 tiles
+        this.character = new Character(scene);
 
-        // Create a blue rectangle for the game board
-        this.board = this.scene.add.rectangle(this.x, this.y, this.BOARD_SIZE, this.BOARD_SIZE, 0x0000FF);
-        this.board.setOrigin(0);  // Set the origin to top-left for easier positioning
         this.boxes = [];
+        this.walls = [];
         this.generateBackground();
         this.levelOne(); 
     }
@@ -35,46 +34,54 @@ export class GameBoard {
     generateBackground(): void {
         this.tiles = [];
         
-        for (let i = 0; i < BOARD_SIZE; i++) {
-            let row: Tile[] = [];
-            for (let j = 0; j < BOARD_SIZE; j++) {
+        for (let i = 0; i < BOARD_HEIGHT; i++) {
+            let row: (Tile | Wall)[] = [];  // The row can contain both Tile and Wall objects
+            for (let j = 0; j < BOARD_LENGTH; j++) {
                 let tileX = this.x + j;
                 let tileY = this.y + i;
-                let tile = new Tile(this.scene, tileX, tileY);
-                row.push(tile);
+        
+                // Check if it's the first row, last row, first column, or last column
+                if (i === 0 || i === BOARD_HEIGHT - 1 || j === 0 || j === BOARD_LENGTH - 1) {
+                    const wall = new Wall(this.scene, tileX, tileY);
+                    this.walls.push(wall);
+                    row.push(wall);
+                } else {
+                    const tile = new Tile(this.scene, tileX, tileY);
+                    row.push(tile);
+                }
             }
             this.tiles.push(row);
         }
+
     }
 
     createLevel(playerPosition: Position, boxPositions: Position[]): void {
-        if(this.character) {
-            this.character.sprite.destroy();
-            this.character = undefined;
-        }
     
         this.boxes.forEach(box => { box.sprite.destroy(); });
         this.boxes = [];
 
-        this.character = new Character(this.scene, playerPosition.x, playerPosition.y);
+        this.character.initSprite(playerPosition.x, playerPosition.y);
+        this.handleWallCollisions();
+
         boxPositions.forEach(box => this.boxes.push(new Box(this.scene, box.x, box.y, this.character)));
     }
 
     levelOne(): void {
+        console.log("lvl 1");
         const boxPositions: Position[] = [
-            { x: 9, y: 6 },
-            { x: 9, y: 12 },
-            { x: 6, y: 12 },
-            { x: 11, y: 12 },
-            { x: 6, y: 14 }
+            { x: 5, y: 6 },
+            { x: 5, y: 12 },
+            { x: 2, y: 12 },
+            { x: 7, y: 12 },
+            { x: 2, y: 14 }
         ];
 
-        const playerPosition: Position = { x: 6, y: 6 };
+        const playerPosition: Position = { x: 2, y: 6 };
 
         this.createLevel(playerPosition, boxPositions);
     }
 
-    getTileAt(row: number, col: number): Tile | null {
+    getTileAt(row: number, col: number): Tile | Wall | null {
         if (row >= 0 && row < this.tiles.length && col >= 0 && col < this.tiles[row].length) {
             return this.tiles[row][col];
         }
@@ -86,6 +93,33 @@ export class GameBoard {
             this.character.move(direction);
         }
     }
+
+    handleWallCollisions(): void {
+        console.log("ASdas");
+        if (!this.character) return;
+        console.log("ASdas2");
+        // Add collider between character sprite and all wall sprites
+        this.walls.forEach(wall => {
+            this.scene.physics.add.collider(this.character.sprite, wall.getSprite(), this.wallCollisionHandler, undefined, this);
+        });
+    }
+    
+    private wallCollisionHandler(): void { 
+        console.log(":hie");
+        if (!this.character) return;
+    
+        // Explode the character
+       // this.character.sprite.destroy(); // or you can play an explosion animation
+        
+       this.character.move("right");
+       this.levelOne();
+
+        // Reset the level after a small delay to give some feedback to the player
+        this.scene.time.delayedCall(1000, () => { // delay for 1 second
+            this.levelOne();
+        });
+    }
+    
 }
 
 export default GameBoard;

@@ -5,8 +5,8 @@ import 'phaser';
 
 const gameConfig: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
-    parent: 'gameCanvas',
-    width: 640,  // adjust based on your preference
+    parent: 'canvasWrapper',
+    width: 360,
     height: 640,
     scene: [Boot, Play],
     physics: {
@@ -15,6 +15,10 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
             debug: false
         }
     },
+    scale: {
+        mode: Phaser.Scale.FIT,
+      //  autoCenter: Phaser.Scale.CENTER_BOTH
+    }
 };
 
 const game = new Phaser.Game(gameConfig);

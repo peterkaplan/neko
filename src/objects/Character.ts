@@ -1,61 +1,73 @@
 import Phaser from 'phaser';
+import { TILE_SIZE, SCALE_RATIO, OFFSET, MAX_VELOCITY } from '../utils/Constants';
+
+const CHARACTER_SIZE = 225; // Extracted this value to a constant for clarity.
 
 export class Character {
-    private scene: any;
+    private scene: Phaser.Scene; // Use Phaser.Scene type for better type checking.
     private x: number;
     private y: number;
-    private tileSize: number;
-    public sprite: Phaser.Physics.Arcade.Sprite;
-    public isMoving: boolean = false;
+    public sprite!: Phaser.Physics.Arcade.Sprite;
+    public isMoving: boolean = true;
 
-    constructor(scene: any, startX: number, startY: number) {
+    constructor(scene: Phaser.Scene) {
         this.scene = scene;
-        this.x = startX;
-        this.y = startY;
-        this.tileSize = 40;  // Assuming each tile is 40x40 pixels as previous examples
-
-        // Create a sprite for the character using its image from the assets
-        this.sprite = this.scene.physics.add.sprite(this.x * this.tileSize, this.y * this.tileSize, 'character');
-        this.sprite.setScale(0.17777);
-        this.sprite.setOrigin(0);
-        console.log(this.scene.emitter.emitting);
-        this.scene.movementEmitter.startFollow(this.sprite);
-
-        this.scene.emitter.startFollow(this.sprite);
-
+        this.x = 0;
+        this.y = 0;
     }
 
+    public initSprite(startX: number, startY: number): void {
+        this.x = startX;
+        this.y = startY;
+
+        const xPosition = this.x * TILE_SIZE + SCALE_RATIO * CHARACTER_SIZE / 2;
+        const yPosition = this.y * TILE_SIZE + SCALE_RATIO * CHARACTER_SIZE / 2;
+    
+        this.sprite = this.scene.physics.add.sprite(xPosition, yPosition, 'character');
+        this.sprite.setScale(0); // Start scaled down
+        this.sprite.setAlpha(0); // Start transparent
+        this.sprite.setOrigin(0.5, 0.5);
+    
+        // Now, let's add the spawning animation
+        this.scene.tweens.add({
+            targets: this.sprite,
+            scaleX: SCALE_RATIO,
+            scaleY: SCALE_RATIO,
+            alpha: 1,
+            angle: 360, // Rotate by 360 degrees (full circle) for a quick twist effect
+            duration: 500, // Duration for the entire animation, you can adjust as needed
+            ease: 'Sine.easeOut', // Smooth easing function for a more polished look
+            onComplete: () => {
+                // Set the rotation back to its original state after the animation
+                this.sprite.setRotation(0);
+            }
+        });
+
+        this.scene.getEmittor().startFollow(this.sprite);
+        this.isMoving = false;
+    }
+    
+
     move(direction: 'left' | 'right' | 'up' | 'down'): void {
-        console.log(direction, this.isMoving);
         if (this.isMoving) {
             return;
         }
 
         this.isMoving = true;
-        console.log(this.scene.emitter.emitting);
         this.scene.emitter.emitting = true;
 
-        this.scene.movementEmitter.emitting = true;
+        const velocityMap = {
+            left: { x: -MAX_VELOCITY, y: 0, rotation: 0 },
+            right: { x: MAX_VELOCITY, y: 0, rotation: 0 },
+            up: { x: 0, y: -MAX_VELOCITY, rotation: -Math.PI / 2 },
+            down: { x: 0, y: MAX_VELOCITY, rotation: Math.PI / 2 }
+        };
 
-        switch(direction) {
-            case 'left':
-                this.sprite.setVelocity(-100, 0);
-                break;
-            case 'right':
-                this.sprite.setVelocity(100, 0);
-                break;
-            case 'up':
-                this.sprite.setVelocity(0, -100);
-                break;
-            case 'down':
-                this.sprite.setVelocity(0, 100);
-                break;
-        }
-
-        // check for collisions
+        const { x, y, rotation } = velocityMap[direction];
+        this.sprite.setVelocity(x, y);
+        this.sprite.rotation = rotation;
     }
 
-    // Public API
     getPosition(): { x: number, y: number } {
         return { x: this.x, y: this.y };
     }
@@ -63,16 +75,36 @@ export class Character {
     setPosition(x: number, y: number): void {
         this.x = x;
         this.y = y;
-        this.sprite.setPosition(this.x * this.tileSize, this.y * this.tileSize);
+        this.sprite.setPosition(this.x * TILE_SIZE + OFFSET, this.y * TILE_SIZE + OFFSET);
     }
 
-    handleBoxCollision(box: any): void {  // You might want to specify a type for `box`
-        this.isMoving = false;
-        this.setPosition(box.x, box.y);
-        this.scene.emitter.emitting = true;
-        this.scene.movementEmitter.emitting = false;
-        this.scene.emitter.explode(10, this.scene.emitter.x, this.scene.emitter.y); // Explode 10 particles from the emitter
+    handleBoxCollision(box: any): void {
+        this.stopMovement();
+    
+        const targetX = box.x * TILE_SIZE + OFFSET;
+        const targetY = box.y * TILE_SIZE + OFFSET;
+    
+        this.moveToPosition(targetX, targetY, (tween: Phaser.Tweens.Tween, targets: any[]) => {
+            this.scene.emitter.explode(10, this.scene.emitter.x, this.scene.emitter.y);
+            this.setPosition(box.x, box.y);
+            this.isMoving = false;
+        });
     }
+    
+    private stopMovement(): void {
+        this.sprite.setVelocity(0, 0);
+    }
+    
+    private moveToPosition(x: number, y: number, onComplete: (tween: Phaser.Tweens.Tween, targets: any[]) => void): void {
+        this.scene.tweens.add({
+            targets: this.sprite,
+            x: x,
+            y: y,
+            duration: 140,
+            onComplete: onComplete
+        });
+    }
+    
 }
 
 export default Character;

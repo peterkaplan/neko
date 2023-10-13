@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { TILE_SIZE } from '../utils/Constants';
+import { TILE_SIZE, SCALE_RATIO } from '../utils/Constants';
 import Character from './Character';
 
 export class Box {
@@ -18,9 +18,8 @@ export class Box {
         // Create a sprite for the box using the box image from the assets
         this.sprite = this.scene.physics.add.sprite(this.x * TILE_SIZE, this.y * TILE_SIZE, 'box');
 
-        console.log("generated");
         this.sprite.setOrigin(0);
-        this.sprite.setScale(0.17777); 
+        this.sprite.setScale(SCALE_RATIO); 
 
         // Enable physics on the box
         this.scene.physics.world.enable(this.sprite);

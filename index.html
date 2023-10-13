@@ -2,23 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>Puzzle Game</title>
+    <link rel="stylesheet" type="text/css" href="./index.css">
 </head>
 <body>
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #000;
-        }
-    </style>
-      <div id="game-container"></div>
+    <img class="logo" src="./assets/images/logo.png" alt="Logo" />
+    <div id="gameContainer">
+        <div id="canvasWrapper"></div>
+    </div>
     <script  type="module" src="src/index.ts"></script>
 </body>
-
-<div id="gameCanvas"></div>
-
 </html>

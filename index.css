@@ -1,0 +1,44 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    background: linear-gradient(45deg, #026b71, #01393a, #028a9b, #026b71, #028a9b, #026b71);
+    background-size: 200% 200%; /* Larger than the viewport to allow sliding effect */
+    animation: gradientAnimation 12s infinite;
+}
+
+@keyframes gradientAnimation {
+    0%, 100% {
+        background-position: 100% 0;
+    }
+    50% {
+        background-position: 0 100%;
+    }
+}
+.title {
+    font-size: 3em; 
+    margin-top: 20px;
+    color: #333;  
+}
+#gameContainer {
+    position: relative;
+    width: 100%;
+    height: 75%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+#canvasWrapper {
+        background: repeating-linear-gradient(45deg, #ffffff, #ffffff 5px, #026b71 10px, #026b71 5px);
+        display: inline-block;
+        padding: 10px;  /* This creates the 'border' effect around the canvas. Adjust as needed. */
+    }
+
+
+.logo {
+    height: 20%;
+}
