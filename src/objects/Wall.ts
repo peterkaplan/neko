@@ -1,10 +1,11 @@
 import { LEFT_MARGIN, TILE_SIZE, TOP_MARGIN, SCALE_RATIO } from '../utils/Constants';
+import Phaser from 'phaser';
 
 export class Wall {
     private scene: any;
     private x: number;
     private y: number;
-    private sprite: any;
+    private sprite: Phaser.Physics.Arcade.Sprite;
 
     constructor(scene: any, x: number, y: number) {
         this.scene = scene;
@@ -16,7 +17,8 @@ export class Wall {
         this.sprite.setScale(SCALE_RATIO);
         this.sprite.height = 30;
         this.sprite.width = 30;
-
+        this.scene.physics.world.enable(this.sprite);
+        (<Phaser.Physics.Arcade.Body>this.sprite.body).setImmovable(true);
     }
 
     public getSprite() {

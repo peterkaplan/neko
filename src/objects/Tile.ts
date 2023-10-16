@@ -4,7 +4,7 @@ export class Tile {
     private scene: any;
     private x: number;
     private y: number;
-    private tile: any;
+    private tile: Phaser.Physics.Arcade.Sprite;
 
     constructor(scene: any, x: number, y: number) {
         this.scene = scene;

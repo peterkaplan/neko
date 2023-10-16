@@ -4,119 +4,104 @@ import { Wall } from "./Wall";
 
 import { Character } from "./Character";
 import { BOARD_HEIGHT, BOARD_LENGTH, TILE_SIZE } from '../utils/Constants';
-
-interface Position {
-    x: number;
-    y: number;
-}
+import { GameState, Position, GAME_STATE, Level } from "../utils/GameState";
 
 export class GameBoard {
     private scene: Phaser.Scene;
-    private x: number;
-    private y: number;
-    private boxes: Box[];
-    private walls: Wall[];
-    private tiles: (Tile|Wall)[][] = [];
-    private character: Character;
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         this.scene = scene;
-        this.x = x; // x position of the top-left corner
-        this.y = y; // y position of the top-left corner
-        this.character = new Character(scene);
-
-        this.boxes = [];
-        this.walls = [];
-        this.generateBackground();
-        this.levelOne(); 
+        GAME_STATE.character = new Character(scene);
+        this.setupBoard();
+        this.loadCurrentLevel(); 
     }
 
-    generateBackground(): void {
-        this.tiles = [];
+    private isBorderPosition(i: number, j: number): boolean {
+        return i === 0 || i === BOARD_HEIGHT - 1 || j === 0 || j === BOARD_LENGTH - 1;
+    }
+
+    private createBoardTile(i: number, j: number): Tile | Wall {
+        if (this.isBorderPosition(i, j)) {
+            const wall = new Wall(this.scene, j, i);
+            GAME_STATE.walls.push(wall);
+            return wall;
+        }
+        return new Tile(this.scene, j, i);
+    }
+    
+    private setupBoard(): void {
+        GAME_STATE.board = [];
         
         for (let i = 0; i < BOARD_HEIGHT; i++) {
-            let row: (Tile | Wall)[] = [];  // The row can contain both Tile and Wall objects
+            let row: (Tile | Wall)[] = [];
             for (let j = 0; j < BOARD_LENGTH; j++) {
-                let tileX = this.x + j;
-                let tileY = this.y + i;
-        
-                // Check if it's the first row, last row, first column, or last column
-                if (i === 0 || i === BOARD_HEIGHT - 1 || j === 0 || j === BOARD_LENGTH - 1) {
-                    const wall = new Wall(this.scene, tileX, tileY);
-                    this.walls.push(wall);
-                    row.push(wall);
-                } else {
-                    const tile = new Tile(this.scene, tileX, tileY);
-                    row.push(tile);
-                }
+                row.push(this.createBoardTile(i, j));
             }
-            this.tiles.push(row);
+            GAME_STATE.board.push(row);
         }
-
+    }
+    
+    
+    private loadCurrentLevel(): void {
+        const level = this.getLevelById(GAME_STATE.currentLevel);
+        if (!level) {
+            console.error(`No level found with id: ${GAME_STATE.currentLevel}`);
+            return;
+        }
+        this.createLevel(level);
+    }
+    
+    private getLevelById(id: number): Level | undefined {
+        return GAME_STATE.levels.find(lvl => lvl.id === id);
     }
 
-    createLevel(playerPosition: Position, boxPositions: Position[]): void {
-    
-        this.boxes.forEach(box => { box.sprite.destroy(); });
-        this.boxes = [];
+    private createLevel(level: Level): void {
+        GAME_STATE.boxes.forEach(box => box.sprite.destroy());
+        GAME_STATE.boxes = [];
 
-        this.character.initSprite(playerPosition.x, playerPosition.y);
+        GAME_STATE.character?.initSprite(level.playerStartPosition.x, level.playerStartPosition.y);
         this.handleWallCollisions();
 
-        boxPositions.forEach(box => this.boxes.push(new Box(this.scene, box.x, box.y, this.character)));
-    }
-
-    levelOne(): void {
-        console.log("lvl 1");
-        const boxPositions: Position[] = [
-            { x: 5, y: 6 },
-            { x: 5, y: 12 },
-            { x: 2, y: 12 },
-            { x: 7, y: 12 },
-            { x: 2, y: 14 }
-        ];
-
-        const playerPosition: Position = { x: 2, y: 6 };
-
-        this.createLevel(playerPosition, boxPositions);
+        level.boxPositions.forEach(pos => GAME_STATE.boxes.push(new Box(this.scene, pos.x, pos.y, GAME_STATE.character)));
     }
 
     getTileAt(row: number, col: number): Tile | Wall | null {
-        if (row >= 0 && row < this.tiles.length && col >= 0 && col < this.tiles[row].length) {
-            return this.tiles[row][col];
+        if (row >= 0 && row < GAME_STATE.board.length && col >= 0 && col < GAME_STATE.board[row].length) {
+            return GAME_STATE.board[row][col];
         }
-        return null; // Return null if the indices are out of bounds
+        return null;
     }
 
     move(direction: 'left' | 'right' | 'up' | 'down'): void {
-        if (this.character) {
-            this.character.move(direction);
+        if (!GAME_STATE.character) {
+            console.error("Character not initialized.");
+            return;
         }
+        GAME_STATE.character.move(direction);
     }
+    
 
-    handleWallCollisions(): void {
-        console.log("ASdas");
-        if (!this.character) return;
-        console.log("ASdas2");
-        // Add collider between character sprite and all wall sprites
-        this.walls.forEach(wall => {
-            this.scene.physics.add.collider(this.character.sprite, wall.getSprite(), this.wallCollisionHandler, undefined, this);
+    private handleWallCollisions(): void {
+        GAME_STATE.walls.forEach(wall => {
+            this.scene.physics.add.collider(wall.getSprite(), GAME_STATE.character!.sprite, this.wallCollisionHandler, undefined, this);
         });
     }
     
     private wallCollisionHandler(): void { 
-        console.log(":hie");
-        if (!this.character) return;
+        if (GAME_STATE.character?.isColliding) {
+            return; // If a collision is already being handled, return early
+        }
+        
+        GAME_STATE.character!.isColliding = true;
     
         // Explode the character
        // this.character.sprite.destroy(); // or you can play an explosion animation
-        
-       this.character.move("right");
-       this.levelOne();
+       GAME_STATE.character?.collisionEffect();
 
+        
         // Reset the level after a small delay to give some feedback to the player
         this.scene.time.delayedCall(1000, () => { // delay for 1 second
-            this.levelOne();
+            this.loadCurrentLevel();
         });
     }
     

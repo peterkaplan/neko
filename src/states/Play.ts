@@ -44,7 +44,7 @@ class Play extends Phaser.Scene {
         emitting: false,
     });
 
-    this.gameBoard = new GameBoard(this, 0, 0); // Create the game board at (0, 0)
+    this.gameBoard = new GameBoard(this); // Create the game board at (0, 0)
 
     this.emitter.setDepth(1);
     }

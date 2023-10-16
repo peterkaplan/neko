@@ -9,6 +9,7 @@ export class Character {
     private y: number;
     public sprite!: Phaser.Physics.Arcade.Sprite;
     public isMoving: boolean = true;
+    public isColliding: boolean = false;
 
     constructor(scene: Phaser.Scene) {
         this.scene = scene;
@@ -23,7 +24,12 @@ export class Character {
         const xPosition = this.x * TILE_SIZE + SCALE_RATIO * CHARACTER_SIZE / 2;
         const yPosition = this.y * TILE_SIZE + SCALE_RATIO * CHARACTER_SIZE / 2;
     
-        this.sprite = this.scene.physics.add.sprite(xPosition, yPosition, 'character');
+        if(!this.sprite) {
+            this.sprite = this.scene.physics.add.sprite(xPosition, yPosition, 'character');
+        } else {
+            this.sprite.setPosition(xPosition, yPosition);
+        }
+
         this.sprite.setScale(0); // Start scaled down
         this.sprite.setAlpha(0); // Start transparent
         this.sprite.setOrigin(0.5, 0.5);
@@ -54,7 +60,6 @@ export class Character {
         }
 
         this.isMoving = true;
-        this.scene.emitter.emitting = true;
 
         const velocityMap = {
             left: { x: -MAX_VELOCITY, y: 0, rotation: 0 },
@@ -104,6 +109,28 @@ export class Character {
             onComplete: onComplete
         });
     }
+
+    public collisionEffect(): void {
+        // Stop any ongoing movement
+        this.stopMovement();
+        
+        // Play a bounce-back effect using a tween
+        this.scene.tweens.add({
+            targets: this.sprite,
+            yoyo: true, // This will make the tween play backward after it finishes, creating the bounce-back effect
+            duration: 500, // Adjust duration as needed
+            scaleX: this.sprite.scaleX * 1.2, // Scale up
+            scaleY: this.sprite.scaleY * 1.2, // Scale up
+            onComplete: () => {
+                this.sprite.clearTint(); // Clear the tint after the animation
+                this.isColliding = false;
+            }
+        });
+    
+        // Tint the sprite to give feedback of getting "hurt"
+        this.sprite.setTint(0xff0000); // Red tint
+    }
+    
     
 }
 
