@@ -5,11 +5,14 @@ import character from '../../assets/images/cow.png';
 import board from '../../assets/images/board.png';
 import grass from '../../assets/images/grass.png';
 import wall from '../../assets/images/wall.png';
+import { GAME_STATE, Level } from '../utils/GameState';
+import { createLevel } from '../utils/LevelGenerator';
+import { LevelManager } from '../utils/LevelManager';
+import BoardInitializer from '../utils/BoardInitializer';
 
 class Play extends Phaser.Scene {
     private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
     private gameBoard?: GameBoard;
-    public movementEmitter?: any;
     public emitter: any;
 
     constructor() {
@@ -28,7 +31,11 @@ class Play extends Phaser.Scene {
     create(): void {
     this.physics.world.createDebugGraphic();
 
-    this.emitter = this.add.particles(0, 0, 'box', {
+    const lvl: Level = createLevel();
+    GAME_STATE.currentLevel = lvl.id;
+    GAME_STATE.levels.push(lvl);
+
+    this.emitter = this.add.particles(0, 0, 'character', {
         alpha: { start: 1, end: 0 },                  // Fading out over time
         scale: { start: .1, end: .05 },              // Starting small, growing larger
         tint: [0xff0000, 0x00ff00, 0x0000ff],         // Cycling through Red, Green, Blue tints
@@ -44,7 +51,9 @@ class Play extends Phaser.Scene {
         emitting: false,
     });
 
-    this.gameBoard = new GameBoard(this); // Create the game board at (0, 0)
+    const levelManager = new LevelManager(this);
+    const boardInitializer = new BoardInitializer(this);
+    this.gameBoard = new GameBoard(this, boardInitializer, levelManager);
 
     this.emitter.setDepth(1);
     }
@@ -53,33 +62,15 @@ class Play extends Phaser.Scene {
         if(!this.cursors || !this.gameBoard) return;
 
         if (Phaser.Input.Keyboard.JustDown(this.cursors.left)) {
-            this.gameBoard.move('left');
+            GAME_STATE.character?.move('left');
         } else if (Phaser.Input.Keyboard.JustDown(this.cursors.right)) {
-            this.gameBoard.move('right');
+            GAME_STATE.character?.move('right');
         } else if (Phaser.Input.Keyboard.JustDown(this.cursors.up)) {
-            this.gameBoard.move('up');
+            GAME_STATE.character?.move('up');
         } else if (Phaser.Input.Keyboard.JustDown(this.cursors.down)) {
-            this.gameBoard.move('down');
+            GAME_STATE.character?.move('down');
         }
     }
-    
-    customRandomZone: Phaser.Types.GameObjects.Particles.RandomZoneSource = {
-        getRandomPoint: (point) => {
-          if (!point) {
-            point = new Phaser.Math.Vector2();
-          }
-      
-          // Calculate a random point within the specified rectangle
-          point.x = Phaser.Math.Between(0, 800); // Adjust the range as needed
-          point.y = Phaser.Math.Between(0, 600); // Adjust the range as needed
-      
-          return point;
-        },
-      };
-
-      public getEmittor(): any {
-            return this.emitter;
-        }
 }
 
 export default Play;

@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { TILE_SIZE, SCALE_RATIO } from '../utils/Constants';
+import { TILE_SIZE, SCALE_RATIO, LEFT_MARGIN, TOP_MARGIN } from '../utils/Constants';
 import Character from './Character';
 
 export class Box {
@@ -7,16 +7,14 @@ export class Box {
     public x: number;
     public y: number;
     public sprite: Phaser.Physics.Arcade.Sprite;
-    private character: Character;
 
-    constructor(scene: Phaser.Scene, x: number, y: number, character: any) {
+    constructor(scene: Phaser.Scene, x: number, y: number) {
         this.scene = scene;
         this.x = x;
         this.y = y;
-        this.character = character;
 
         // Create a sprite for the box using the box image from the assets
-        this.sprite = this.scene.physics.add.sprite(this.x * TILE_SIZE, this.y * TILE_SIZE, 'box');
+        this.sprite = this.scene.physics.add.sprite(this.x * TILE_SIZE + LEFT_MARGIN, this.y * TILE_SIZE + TOP_MARGIN, 'box');
 
         this.sprite.setOrigin(0);
         this.sprite.setScale(SCALE_RATIO); 
@@ -26,21 +24,6 @@ export class Box {
 
         // Adjust any properties if needed
         this.sprite.setImmovable(true); // To ensure that the character stops upon hitting the box
-
-        // Set up collision with the character (This assumes the character is a global object or passed in some manner)
-        this.scene.physics.add.collider(this.sprite, character.sprite, this.breakBox, undefined, this);
-    }
-
-    breakBox(): void {
-        // Play break box sound
-        // this.scene.sound.play('break-box');
-
-        // Destroy the box
-        this.sprite.destroy();
-        console.log(this.isBroken());
-
-        this.character.handleBoxCollision(this);
-        // Add any additional logic here, like updating scores, or checking if all boxes are broken
     }
 
     // Public API

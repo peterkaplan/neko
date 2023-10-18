@@ -12,7 +12,6 @@ export interface Level {
     id: number;
     playerStartPosition: Position;
     boxPositions: Position[];
-    // You can extend this later to include enemies, items, etc.
 }
 
 export interface GameState {
@@ -25,6 +24,8 @@ export interface GameState {
     boxes: Box[];
     board: (Tile|Wall)[][];
     walls: Wall[];
+    canPlayerMove: boolean;
+    currentlyColliding: boolean;
 }
 
 export const GAME_STATE: GameState = {
@@ -32,6 +33,8 @@ export const GAME_STATE: GameState = {
     score: 0,
     lives: 3,
     maxLives: 3,
+    canPlayerMove: false,
+    currentlyColliding: false,
     boxes: [],
     board: [],
     walls: [],

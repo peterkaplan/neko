@@ -1,5 +1,5 @@
 
-createLevel(playerPosition, boxPositions) {
+/* createLevel(playerPosition, boxPositions) {
     if(this.character) {
         this.character.sprite.destroy();
         this.character = null;
@@ -46,12 +46,6 @@ levelOne() {
     this.createLevel(playerPosition, boxPositions);
 }
 
-getTileAt(row, col) {
-    if (row >= 0 && row < this.map.length && col >= 0 && col < this.map[row].length) {
-        return this.map[row][col];
-    }
-    return null; // Return null if the indices are out of bounds
-}
 
 isLevelSolvable(characterPosition, boxPositions) {
     let visited = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(false));
@@ -179,4 +173,4 @@ generateLevel() {
     }
 
     return level;
-}
+} */

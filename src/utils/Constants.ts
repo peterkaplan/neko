@@ -5,4 +5,4 @@ export const LEFT_MARGIN = 0;
 export const TOP_MARGIN = 90;
 export const SCALE_RATIO = 30/225;
 export const OFFSET = (SCALE_RATIO * 225 / 2);
-export const MAX_VELOCITY = 200;
+export const MAX_VELOCITY = 400;
