@@ -1,5 +1,5 @@
-import { LEFT_MARGIN, TILE_SIZE, TOP_MARGIN, SCALE_RATIO } from '../utils/Constants';
 import Phaser from 'phaser';
+import { GET_SCALE_SIZE, GET_TILE_SIZE, GET_X_FROM_INDEX, GET_Y_FROM_INDEX } from '../utils/GameState';
 
 export class Wall {
     private scene: any;
@@ -12,12 +12,14 @@ export class Wall {
         this.x = x; // x position of the top-left corner
         this.y = y; // y position of the top-left corner
 
-        this.sprite = this.scene.add.sprite(this.x * TILE_SIZE + LEFT_MARGIN, this.y * TILE_SIZE + TOP_MARGIN, 'wall');
+        this.sprite = this.scene.add.sprite(GET_X_FROM_INDEX(this.x), GET_Y_FROM_INDEX(this.y), 'wall');
         this.sprite.setOrigin(0);  // Set the origin to top-left for easier positioning
-        this.sprite.setScale(SCALE_RATIO);
-        this.sprite.height = 30;
-        this.sprite.width = 30;
+        this.sprite.height = GET_TILE_SIZE();
+        this.sprite.width = GET_TILE_SIZE();
+        this.sprite.setScale(GET_SCALE_SIZE());
+
         this.scene.physics.world.enable(this.sprite);
+        console.log(this.sprite);
         (<Phaser.Physics.Arcade.Body>this.sprite.body).setImmovable(true);
     }
 

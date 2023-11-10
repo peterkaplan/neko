@@ -1,10 +1,5 @@
-import { Box } from "./Box";
-import { Tile } from "./Tile";
-import { Wall } from "./Wall";
-
 import { Character } from "./Character";
-import { BOARD_HEIGHT, BOARD_LENGTH, TILE_SIZE } from '../utils/Constants';
-import { GameState, Position, GAME_STATE, Level } from "../utils/GameState";
+import { GAME_STATE, resetGameState } from "../utils/GameState";
 import { BoardInitializer } from "../utils/BoardInitializer";
 import { LevelManager } from "../utils/LevelManager";
 
@@ -19,9 +14,8 @@ export class GameBoard {
         this.levelManager = levelManager;
 
         GAME_STATE.character = new Character(scene);
-        GAME_STATE.character.initSprite(2, 6);
+        GAME_STATE.character.initSprite(3, 3);
 
-        this.setUpBoard();
         this.initializeLevel();
     }
 
@@ -31,6 +25,12 @@ export class GameBoard {
     }
 
     private initializeLevel(){
+        // To do update this to only teardown board if board changes
+        if (!this.levelManager.getLevelById(GAME_STATE.currentLevel)) {
+            this.boardInitializer.tearDownBoard();
+        }
+
+        this.setUpBoard();
         this.levelManager.loadCurrentLevel();
         this.setUpBoxCollisions(); 
     }
@@ -47,16 +47,27 @@ export class GameBoard {
         });
     }
     
+    private gameOver(): void {
+        if (GAME_STATE.lives === 0) {
+          resetGameState();
+        }
+    }
+
+    // Character death
     private wallCollisionHandler(): void { 
+        console.log("Wall collision", GAME_STATE.currentlyColliding);
         if (GAME_STATE.currentlyColliding) {
             return;
         }
 
         // Explode the character
         GAME_STATE.character?.collisionEffect();
-        
+
+        GAME_STATE.lives -= 1;
+            
         // Reset the level after a small delay to give some feedback to the player
         this.scene.time.delayedCall(1000, () => { // delay for 1 second
+            this.gameOver();
             this.initializeLevel();
         });
     }
@@ -65,16 +76,23 @@ export class GameBoard {
         // Destroy the box
         box.sprite.destroy();
         GAME_STATE.boxes = GAME_STATE.boxes.filter(b => b !== box);
-
         GAME_STATE.character?.handleBoxCollision(box);
-        console.log(GAME_STATE.boxes.length);
+
+        GAME_STATE.score += 10;
+
         if (GAME_STATE.boxes.length === 0) {
-            this.levelManager.handleLevelComplete();
-            this.scene.time.delayedCall(1000, () => { // delay for 1 second
-                this.initializeLevel();
-            });
+            this.winLevel();
         }
     }    
+
+    private winLevel() {
+        this.levelManager.handleLevelComplete();
+        GAME_STATE.score += 100;
+        this.scene.time.delayedCall(1000, () => { // delay for 1 second
+            GAME_STATE.currentLevel++;
+            this.initializeLevel();
+        });
+    }
 }
 
 export default GameBoard;

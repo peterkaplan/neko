@@ -5,15 +5,19 @@ import character from '../../assets/images/cow.png';
 import board from '../../assets/images/board.png';
 import grass from '../../assets/images/grass.png';
 import wall from '../../assets/images/wall.png';
+import background from '../../assets/images/background.png';
 import { GAME_STATE, Level } from '../utils/GameState';
 import { createLevel } from '../utils/LevelGenerator';
 import { LevelManager } from '../utils/LevelManager';
 import BoardInitializer from '../utils/BoardInitializer';
+import Scoreboard from '../utils/Scoreboard';
 
 class Play extends Phaser.Scene {
     private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
     private gameBoard?: GameBoard;
+    private scoreBoard?: Scoreboard;
     public emitter: any;
+
 
     constructor() {
         super({ key: 'Play' });
@@ -26,11 +30,15 @@ class Play extends Phaser.Scene {
         this.load.image('board', board);
         this.load.image('grass', grass);
         this.load.image('wall', wall);
+        this.load.image('background', background);
+        this.add.text(0, 0, "preloadFont", {fontFamily: 'PixelFont', fontSize: '0px'});
+        
     }
 
     create(): void {
     this.physics.world.createDebugGraphic();
-
+    const background = this.add.sprite(180, 320, 'background');
+    background.setScale(.333);
     const lvl: Level = createLevel();
     GAME_STATE.currentLevel = lvl.id;
     GAME_STATE.levels.push(lvl);
@@ -54,6 +62,7 @@ class Play extends Phaser.Scene {
     const levelManager = new LevelManager(this);
     const boardInitializer = new BoardInitializer(this);
     this.gameBoard = new GameBoard(this, boardInitializer, levelManager);
+    this.scoreBoard = new Scoreboard(this);
 
     this.emitter.setDepth(1);
     }
@@ -70,6 +79,8 @@ class Play extends Phaser.Scene {
         } else if (Phaser.Input.Keyboard.JustDown(this.cursors.down)) {
             GAME_STATE.character?.move('down');
         }
+
+        this.scoreBoard?.update();
     }
 }
 

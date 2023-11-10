@@ -1,8 +1,6 @@
 import Phaser from 'phaser';
-import { TILE_SIZE, SCALE_RATIO, OFFSET, MAX_VELOCITY, LEFT_MARGIN, TOP_MARGIN  } from '../utils/Constants';
-import { GAME_STATE } from '../utils/GameState';
-
-const CHARACTER_SIZE = 225; // Extracted this value to a constant for clarity.
+import { MAX_VELOCITY, LEFT_MARGIN, TOP_MARGIN, SPRITE_SIZE  } from '../utils/Constants';
+import { GAME_STATE, GET_SCALE_SIZE, GET_X_FROM_INDEX, GET_X_FROM_INDEX_WITH_OFFSET, GET_Y_FROM_INDEX, GET_Y_FROM_INDEX_WITH_OFFSET } from '../utils/GameState';
 
 export class Character {
     private scene: Phaser.Scene; // Use Phaser.Scene type for better type checking.
@@ -22,9 +20,8 @@ export class Character {
         this.x = startX;
         this.y = startY;
 
-        const xPosition = this.x * TILE_SIZE + LEFT_MARGIN + SCALE_RATIO * CHARACTER_SIZE / 2;
-        const yPosition = this.y * TILE_SIZE + TOP_MARGIN  + SCALE_RATIO * CHARACTER_SIZE / 2;
-        console.log(xPosition, yPosition);
+        const xPosition = GET_X_FROM_INDEX_WITH_OFFSET(this.x);
+        const yPosition = GET_Y_FROM_INDEX_WITH_OFFSET(this.y);
     
         if(!this.sprite) {
             this.sprite = this.scene.physics.add.sprite(xPosition, yPosition, 'character');
@@ -36,12 +33,13 @@ export class Character {
         this.sprite.setAlpha(0); // Start transparent
         this.sprite.setOrigin(0.5, 0.5);
         this.sprite.setDepth(1);
-    
+        GAME_STATE.currentlyColliding = true;
+
         // Now, let's add the spawning animation
         this.scene.tweens.add({
             targets: this.sprite,
-            scaleX: SCALE_RATIO,
-            scaleY: SCALE_RATIO,
+            scaleX: GET_SCALE_SIZE() - .01,
+            scaleY: GET_SCALE_SIZE() - .01,
             alpha: 1,
             angle: 360, // Rotate by 360 degrees (full circle) for a quick twist effect
             duration: 500, // Duration for the entire animation, you can adjust as needed
@@ -59,7 +57,6 @@ export class Character {
 
     }
     
-
     move(direction: 'left' | 'right' | 'up' | 'down'): void {
         if (!GAME_STATE.canPlayerMove) {
             return;
@@ -86,15 +83,15 @@ export class Character {
     setPosition(x: number, y: number): void {
         this.x = x;
         this.y = y;
-        this.sprite.setPosition(this.x * TILE_SIZE + LEFT_MARGIN + OFFSET, this.y * TILE_SIZE + TOP_MARGIN + OFFSET);
+        this.sprite.setPosition(GET_X_FROM_INDEX_WITH_OFFSET(x), GET_Y_FROM_INDEX_WITH_OFFSET(y));
     }
 
     handleBoxCollision(box: any): void {
         this.stopMovement();
     
-        const targetX = box.x * TILE_SIZE + OFFSET + LEFT_MARGIN;
-        const targetY = box.y * TILE_SIZE + OFFSET + TOP_MARGIN;
-    
+        const targetX = GET_X_FROM_INDEX_WITH_OFFSET(box.x);
+        const targetY = GET_Y_FROM_INDEX_WITH_OFFSET(box.y);
+
         this.moveToPosition(targetX, targetY, (tween: Phaser.Tweens.Tween, targets: any[]) => {
             this.scene.emitter.explode(10, this.scene.emitter.x, this.scene.emitter.y);
             console.log("onComplete1");

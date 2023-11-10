@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
-import { TILE_SIZE, SCALE_RATIO, LEFT_MARGIN, TOP_MARGIN } from '../utils/Constants';
+import { LEFT_MARGIN, TOP_MARGIN } from '../utils/Constants';
 import Character from './Character';
+import { GET_SCALE_SIZE, GET_X_FROM_INDEX, GET_Y_FROM_INDEX } from '../utils/GameState';
 
 export class Box {
     private scene: Phaser.Scene;
@@ -14,10 +15,10 @@ export class Box {
         this.y = y;
 
         // Create a sprite for the box using the box image from the assets
-        this.sprite = this.scene.physics.add.sprite(this.x * TILE_SIZE + LEFT_MARGIN, this.y * TILE_SIZE + TOP_MARGIN, 'box');
+        this.sprite = this.scene.physics.add.sprite(GET_X_FROM_INDEX(x), GET_Y_FROM_INDEX(y), 'box');
 
         this.sprite.setOrigin(0);
-        this.sprite.setScale(SCALE_RATIO); 
+        this.sprite.setScale( GET_SCALE_SIZE() - .01); 
 
         // Enable physics on the box
         this.scene.physics.world.enable(this.sprite);
