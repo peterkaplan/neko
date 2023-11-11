@@ -10,7 +10,7 @@ export class Scoreboard {
 
         this.scoreText = scene.add.text(158, 537, GAME_STATE.score.toString(), {
             fontFamily: 'PixelFont',
-            fontSize: '12px',
+            fontSize: '14px',
             color: '#ffffff',
             align: 'center',
             stroke: '#000000',
@@ -19,7 +19,7 @@ export class Scoreboard {
     
         this.lives = scene.add.text(158, 562, GAME_STATE.lives.toString(), {
             fontFamily: 'PixelFont',
-            fontSize: '12px',
+            fontSize: '14px',
             color: '#ffffff',
             align: 'center',
             stroke: '#000000',
@@ -28,7 +28,7 @@ export class Scoreboard {
     
         this.level = scene.add.text(158, 585, GAME_STATE.currentLevel.toString(), {
             fontFamily: 'PixelFont',
-            fontSize: '12px',
+            fontSize: '14px',
             color: '#ffffff',
             align: 'center',
             stroke: '#000000',

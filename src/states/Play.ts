@@ -36,7 +36,7 @@ class Play extends Phaser.Scene {
     }
 
     create(): void {
-    this.physics.world.createDebugGraphic();
+    //this.physics.world.createDebugGraphic();
     const background = this.add.sprite(180, 320, 'background');
     background.setScale(.333);
     const lvl: Level = createLevel();
