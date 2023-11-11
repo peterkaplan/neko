@@ -2,30 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>Puzzle Game</title>
+    <link rel="stylesheet" type="text/css" href="./index.css">
 </head>
 <body>
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #000;
-        }
-    </style>
-    <script src="phaser.min.js"></script>
-    <!-- Add your game scripts here -->
-    <script src="src/objects/GameBoard.js"></script>
-    <script src="src/objects/Character.js"></script>
-    <script src="src/objects/Box.js"></script>
-    <script type="module" src="src/states/Boot.js"></script>
-    <script type="module" src="src/states/Play.js"></script>
-    <script src="src/App.js"></script>
-    <script type="module" src="src/index.js"></script>
+    <img class="logo" src="./assets/images/logo.png" alt="Logo" />
+    <div id="gameContainer">
+        <div id="canvasWrapper"></div>
+    </div>
+    <script  type="module" src="src/index.ts"></script>
 </body>
-
-<div id="gameCanvas"></div>
-
 </html>
