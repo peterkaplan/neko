@@ -1,0 +1,33 @@
+# Dependency directory
+node_modules/
+
+# Parcel build output
+dist/
+
+# TypeScript compiled Javascript files
+*.js
+*.js.map
+
+# Environment files
+.env
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Editor directories and files
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Optional: Parcel cache (if you want to exclude it)
+.cache/
+.parcel-cache/
+@types/
