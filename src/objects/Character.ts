@@ -24,15 +24,17 @@ export class Character {
         const yPosition = GET_Y_FROM_INDEX_WITH_OFFSET(this.y);
     
         if(!this.sprite) {
-            this.sprite = this.scene.physics.add.sprite(xPosition, yPosition, 'character');
+            this.sprite = this.scene.physics.add.sprite(xPosition, yPosition, 'cat_idle_right');
         } else {
             this.sprite.setPosition(xPosition, yPosition);
         }
 
+        this.sprite.setTexture('cat_idle_right');
         this.sprite.setScale(0); // Start scaled down
         this.sprite.setAlpha(0); // Start transparent
         this.sprite.setOrigin(0.5, 0.5);
         this.sprite.setDepth(1);
+        GAME_STATE.lastDirection = 'right';
         GAME_STATE.currentlyColliding = true;
 
         // Now, let's add the spawning animation
@@ -47,9 +49,7 @@ export class Character {
             onComplete: () => {
                 // Set the rotation back to its original state after the animation
                 this.sprite.setRotation(0);
-                console.log("onComplete");
                 this.enableMovement();
-                GAME_STATE.currentlyColliding = false;
             }
         });
 
@@ -71,6 +71,15 @@ export class Character {
             down: { x: 0, y: MAX_VELOCITY, rotation: Math.PI / 2 }
         };
 
+        if (direction === 'left') {
+            this.sprite.setTexture('cat_idle_left');
+            this.sprite.play('jumpLeft');
+        } else {
+            this.sprite.setTexture('cat_idle_right');
+            this.sprite.play('jumpRight');  
+        }
+
+        GAME_STATE.lastDirection = direction;
         const { x, y, rotation } = velocityMap[direction];
         this.sprite.setVelocity(x, y);
         this.sprite.rotation = rotation;
@@ -87,6 +96,15 @@ export class Character {
     }
 
     handleBoxCollision(box: any): void {
+ 
+        if (GAME_STATE.lastDirection == 'left') {
+            GAME_STATE.character?.sprite.playReverse("jumpLeft");
+            console.log("jumpRight");
+        } else {
+            GAME_STATE.character?.sprite.playReverse("jumpRight");
+            console.log("jumpLeft");
+        }
+
         this.stopMovement();
     
         const targetX = GET_X_FROM_INDEX_WITH_OFFSET(box.x);
@@ -94,7 +112,6 @@ export class Character {
 
         this.moveToPosition(targetX, targetY, (tween: Phaser.Tweens.Tween, targets: any[]) => {
             this.scene.emitter.explode(10, this.scene.emitter.x, this.scene.emitter.y);
-            console.log("onComplete1");
             // this conflicts with # of boxes 
             this.enableMovement();
         });
@@ -103,6 +120,8 @@ export class Character {
     private stopMovement(): void {
         this.sprite.setVelocity(0, 0);
         GAME_STATE.canPlayerMove = false;
+        this.sprite.body!.enable = false;
+
     }
 
     private enableMovement(): void {
@@ -110,6 +129,7 @@ export class Character {
             return;
         }
         GAME_STATE.canPlayerMove = true;
+        this.sprite.body!.enable = true;
     }   
     
     private moveToPosition(x: number, y: number, onComplete: (tween: Phaser.Tweens.Tween, targets: any[]) => void): void {
@@ -125,8 +145,7 @@ export class Character {
     public collisionEffect(): void {
         // Stop any ongoing movement
         this.stopMovement();
-        GAME_STATE.currentlyColliding = true;
-
+        
         // Play a bounce-back effect using a tween
         this.scene.tweens.add({
             targets: this.sprite,
@@ -136,7 +155,6 @@ export class Character {
             scaleY: this.sprite.scaleY * 1.2, // Scale up
             onComplete: () => {
                 this.sprite.clearTint(); // Clear the tint after the animation
-                GAME_STATE.currentlyColliding = false;
             }
         });
     
@@ -147,7 +165,6 @@ export class Character {
     public winEffect(): void {
         // Stop any ongoing movement
         this.stopMovement();
-        GAME_STATE.currentlyColliding = true;
 
         // Flash between a golden color (for victory) and normal color
         this.scene.tweens.add({
@@ -157,14 +174,10 @@ export class Character {
             repeat: 5, // Repeat 5 times for a flash effect
             yoyo: true,
             onStart: () => {
-                console.log("onStart");
                 this.sprite.setTint(0xffd700); // Golden tint
-                console.log( GAME_STATE.canPlayerMove);
             },
             onYoyo: () => {
                 this.sprite.clearTint();
-                console.log( GAME_STATE.canPlayerMove);
-
             },
             onRepeat: () => {
                 this.sprite.setTint(0xffd700); // Golden tint

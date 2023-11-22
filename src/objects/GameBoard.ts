@@ -28,9 +28,9 @@ export class GameBoard {
         // To do update this to only teardown board if board changes
         if (!this.levelManager.getLevelById(GAME_STATE.currentLevel)) {
             this.boardInitializer.tearDownBoard();
+            this.setUpBoard();
         }
 
-        this.setUpBoard();
         this.levelManager.loadCurrentLevel();
         this.setUpBoxCollisions(); 
     }
@@ -56,9 +56,6 @@ export class GameBoard {
     // Character death
     private wallCollisionHandler(): void { 
         console.log("Wall collision", GAME_STATE.currentlyColliding);
-        if (GAME_STATE.currentlyColliding) {
-            return;
-        }
 
         // Explode the character
         GAME_STATE.character?.collisionEffect();

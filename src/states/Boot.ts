@@ -10,7 +10,7 @@ class Boot extends Phaser.Scene {
     }
 
     create(): void {
-        this.scene.start('Play');  // After loading assets, start the Play state
+        this.scene.start('Start');  // After loading assets, start the Play state
     }
 }
 

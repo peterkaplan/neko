@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GET_SCALE_SIZE, GET_TILE_SIZE, GET_X_FROM_INDEX, GET_Y_FROM_INDEX } from '../utils/GameState';
+import { GAME_STATE, GET_SCALE_SIZE, GET_TILE_SIZE, GET_WALL_WIDTH, GET_X_FROM_INDEX, GET_Y_FROM_INDEX, getLevelConfig } from '../utils/GameState';
 
 export class Wall {
     private scene: any;
@@ -14,13 +14,32 @@ export class Wall {
 
         this.sprite = this.scene.add.sprite(GET_X_FROM_INDEX(this.x), GET_Y_FROM_INDEX(this.y), 'wall');
         this.sprite.setOrigin(0);  // Set the origin to top-left for easier positioning
-        this.sprite.height = GET_TILE_SIZE();
-        this.sprite.width = GET_TILE_SIZE();
+        
         this.sprite.setScale(GET_SCALE_SIZE());
 
+        if (x == 0 || x == getLevelConfig().board_width - 1) {
+            this.sprite.displayWidth = GET_WALL_WIDTH();
+            this.sprite.width = GET_WALL_WIDTH();
+        } else {
+            this.sprite.displayWidth = GET_TILE_SIZE();
+            this.sprite.width = GET_TILE_SIZE();
+        }
+
+        if (y == 0 || y == getLevelConfig().board_height - 1) {
+            this.sprite.height = GET_WALL_WIDTH();
+            this.sprite.displayHeight = GET_WALL_WIDTH();
+        } else {
+            this.sprite.height = GET_TILE_SIZE();
+            this.sprite.displayHeight = GET_TILE_SIZE();
+        }
+
         this.scene.physics.world.enable(this.sprite);
-        console.log(this.sprite);
         (<Phaser.Physics.Arcade.Body>this.sprite.body).setImmovable(true);
+        if (this.sprite.body) {
+            this.sprite.body.debugBodyColor = 0x00ff00;
+        }
+
+        this.sprite.visible = false;
     }
 
     public getSprite() {

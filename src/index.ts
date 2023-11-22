@@ -2,13 +2,14 @@ import Boot from './states/Boot';
 import Play from './states/Play';
 
 import 'phaser';
+import Start from './states/Start';
 
 const gameConfig: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
     parent: 'canvasWrapper',
     width: 360,
     height: 640,
-    scene: [Boot, Play],
+    scene: [Boot, Start, Play],
     physics: {
         default: 'arcade',
         arcade: {

@@ -1,6 +1,10 @@
 import { GAME_STATE, Level, LevelConfig, Position, getLevelConfig } from "./GameState";
 
 export function createLevel(): Level {
+    if (GAME_STATE.levels.length === 0) {
+
+    }
+
     const takenPositions = new Set();
     const config = getLevelConfig();
     let position = getRandomPosition(config);

@@ -2,7 +2,7 @@ import Box from "../objects/Box";
 import Character from "../objects/Character";
 import Tile from "../objects/Tile";
 import Wall from "../objects/Wall";
-import { LEFT_MARGIN, TOP_MARGIN } from "./Constants";
+import { GAME_WIDTH, LEFT_MARGIN, TOP_MARGIN, WALL_WIDTH } from "./Constants";
 
 export interface Position {
     x: number;
@@ -29,12 +29,15 @@ export interface GameState {
     lives: number;
     maxLives: number;
     levels: Level[];
+    levelConfigs: LevelConfig[];
     character?: Character;
     boxes: Box[];
     board: (Tile|Wall)[][];
     walls: Wall[];
     canPlayerMove: boolean;
     currentlyColliding: boolean;
+    regenBoard: boolean;
+    lastDirection: 'left' | 'right' | 'up' | 'down';
 }
 
 export const GAME_STATE: GameState = {
@@ -44,14 +47,17 @@ export const GAME_STATE: GameState = {
     maxLives: 3,
     canPlayerMove: false,
     currentlyColliding: false,
+    lastDirection: 'right',
     boxes: [],
     board: [],
     walls: [],
-    levels: [
-    ]
+    levels: [],
+    regenBoard: false,
+    levelConfigs: [],
 };
 
 export function resetGameState(): void {
+    GAME_STATE.regenBoard = true;
     GAME_STATE.currentLevel = 1;
     GAME_STATE.score = 0;
     GAME_STATE.lives = 3;
@@ -59,33 +65,37 @@ export function resetGameState(): void {
 }
 
 export function getLevelConfig(): LevelConfig {
-    return {
-        level_number: GAME_STATE.currentLevel + 1,
-        board_width:  6 + GAME_STATE.currentLevel,
-        board_height: 7 + GAME_STATE.currentLevel,
-        number_of_boxes:  GAME_STATE.currentLevel,
-    }
+    return GAME_STATE.levelConfigs[GAME_STATE.currentLevel];
 }
 
 export function GET_TILE_SIZE(): number {
-    const size = (360 / getLevelConfig().board_width);
+    const size =  ((GAME_WIDTH - (GET_WALL_WIDTH() * 2)) / (getLevelConfig().board_width - 2));
     return size;
 }
 
-export function GET_SCALE_SIZE(): number {
-    console.log( getLevelConfig());
+export function GET_WALL_WIDTH(): number {
+    return WALL_WIDTH;
+}
 
-    const scale = (360 / getLevelConfig().board_width) / 225;
-    console.log(scale);
+export function GET_SCALE_SIZE(): number {
+    const scale = GET_TILE_SIZE() / 225;
     return scale
 }
 
 export function GET_X_FROM_INDEX(xIndex: number): number {
-    return xIndex * GET_TILE_SIZE() + 0;
+    if(xIndex === 0) {
+        return 0 + LEFT_MARGIN;
+    }  
+
+    return (xIndex - 1) * GET_TILE_SIZE() + GET_WALL_WIDTH() + LEFT_MARGIN;
 }
 
 export function GET_Y_FROM_INDEX(yIndex: number): number {
-    return yIndex * GET_TILE_SIZE() + 90;
+    if (yIndex === 0) {
+        return TOP_MARGIN;
+    }
+
+    return (yIndex -1) * GET_TILE_SIZE() + GET_WALL_WIDTH() + TOP_MARGIN;
 }
 
 export function GET_X_FROM_INDEX_WITH_OFFSET(xIndex: number): number {
