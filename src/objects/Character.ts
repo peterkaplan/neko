@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { MAX_VELOCITY, LEFT_MARGIN, TOP_MARGIN, SPRITE_SIZE  } from '../utils/Constants';
+import { MAX_VELOCITY, SPRITE_SIZE } from '../utils/Constants';
 import { GAME_STATE, GET_SCALE_SIZE, GET_X_FROM_INDEX, GET_X_FROM_INDEX_WITH_OFFSET, GET_Y_FROM_INDEX, GET_Y_FROM_INDEX_WITH_OFFSET } from '../utils/GameState';
 
 export class Character {
@@ -25,11 +25,18 @@ export class Character {
     
         if(!this.sprite) {
             this.sprite = this.scene.physics.add.sprite(xPosition, yPosition, 'cat_idle_right');
+            // Keep the body smaller than a tile so the cat doesn't graze the
+            // walls flanking the corridor it slides through.
+            this.sprite.setBodySize(SPRITE_SIZE * 0.6, SPRITE_SIZE * 0.6, true);
         } else {
             this.sprite.setPosition(xPosition, yPosition);
         }
 
         this.sprite.setTexture('cat_idle_right');
+        // A press queued before a death/level change must not replay on respawn,
+        // and a still-held key must be released before hold-to-continue resumes
+        GAME_STATE.bufferedMove = undefined;
+        GAME_STATE.holdInputArmed = false;
         this.sprite.setScale(0); // Start scaled down
         this.sprite.setAlpha(0); // Start transparent
         this.sprite.setOrigin(0.5, 0.5);
@@ -59,9 +66,12 @@ export class Character {
     
     move(direction: 'left' | 'right' | 'up' | 'down'): void {
         if (!GAME_STATE.canPlayerMove) {
+            // Pressed in anticipation mid-slide: remember it for landing
+            GAME_STATE.bufferedMove = direction;
             return;
         }
 
+        GAME_STATE.bufferedMove = undefined;
         GAME_STATE.canPlayerMove = false;
 
         const velocityMap = {
@@ -83,6 +93,7 @@ export class Character {
         const { x, y, rotation } = velocityMap[direction];
         this.sprite.setVelocity(x, y);
         this.sprite.rotation = rotation;
+        this.scene.sound.play('sfx_jump');
     }
 
     getPosition(): { x: number, y: number } {
@@ -99,10 +110,8 @@ export class Character {
  
         if (GAME_STATE.lastDirection == 'left') {
             GAME_STATE.character?.sprite.playReverse("jumpLeft");
-            console.log("jumpRight");
         } else {
             GAME_STATE.character?.sprite.playReverse("jumpRight");
-            console.log("jumpLeft");
         }
 
         this.stopMovement();
@@ -130,7 +139,13 @@ export class Character {
         }
         GAME_STATE.canPlayerMove = true;
         this.sprite.body!.enable = true;
-    }   
+
+        const buffered = GAME_STATE.bufferedMove;
+        GAME_STATE.bufferedMove = undefined;
+        if (buffered) {
+            this.move(buffered);
+        }
+    }
     
     private moveToPosition(x: number, y: number, onComplete: (tween: Phaser.Tweens.Tween, targets: any[]) => void): void {
         this.scene.tweens.add({

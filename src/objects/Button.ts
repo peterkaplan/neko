@@ -117,8 +117,7 @@ export default class Button extends Phaser.GameObjects.Image
 
 	private handleOut(pointer: Phaser.Input.Pointer) {
 		this.setTexture(this.outTexture)
-		this.setTint(this.outTint) 
-        console.log("out");
+		this.setTint(this.outTint)
     }
 
 	private handleDown(pointer: Phaser.Input.Pointer)

@@ -1,5 +1,6 @@
 import { Character } from "./Character";
-import { GAME_STATE, resetGameState } from "../utils/GameState";
+import { GAME_STATE } from "../utils/GameState";
+import { markTodayCompleted } from "../utils/Daily";
 import { BoardInitializer } from "../utils/BoardInitializer";
 import { LevelManager } from "../utils/LevelManager";
 
@@ -47,29 +48,28 @@ export class GameBoard {
         });
     }
     
-    private gameOver(): void {
-        if (GAME_STATE.lives === 0) {
-          resetGameState();
-        }
-    }
-
     // Character death
-    private wallCollisionHandler(): void { 
-        console.log("Wall collision", GAME_STATE.currentlyColliding);
+    private wallCollisionHandler(): void {
+        this.scene.sound.play('sfx_death');
 
         // Explode the character
         GAME_STATE.character?.collisionEffect();
 
         GAME_STATE.lives -= 1;
-            
+
         // Reset the level after a small delay to give some feedback to the player
         this.scene.time.delayedCall(1000, () => { // delay for 1 second
-            this.gameOver();
-            this.initializeLevel();
+            if (GAME_STATE.lives <= 0) {
+                this.scene.scene.start('GameOver');
+            } else {
+                this.initializeLevel();
+            }
         });
     }
 
     private boxCollisionHandler(box: any): void  {
+        this.scene.sound.play('sfx_collect');
+
         // Destroy the box
         box.sprite.destroy();
         GAME_STATE.boxes = GAME_STATE.boxes.filter(b => b !== box);
@@ -83,8 +83,19 @@ export class GameBoard {
     }    
 
     private winLevel() {
+        this.scene.sound.play('sfx_clear');
         this.levelManager.handleLevelComplete();
         GAME_STATE.score += 100;
+
+        if (GAME_STATE.mode === 'daily') {
+            GAME_STATE.score += GAME_STATE.lives * 50; // reward surviving lives
+            markTodayCompleted(GAME_STATE.score);
+            this.scene.time.delayedCall(1000, () => {
+                this.scene.scene.start('DailyClear');
+            });
+            return;
+        }
+
         this.scene.time.delayedCall(1000, () => { // delay for 1 second
             GAME_STATE.currentLevel++;
             this.initializeLevel();

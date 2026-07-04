@@ -1,50 +1,299 @@
 import Phaser from 'phaser';
-import play from '../../assets/images/start.png';
-import character from '../../assets/images/cow.png';
-import playbutton from '../../assets/images/button.png';
-import Button from '../objects/Button';
+import buttonDark from '../../assets/generated/button_dark.png';
+import buttonRed from '../../assets/generated/button_red.png';
+import catIdle from '../../assets/images/cat_right_idle.png';
+import honey from '../../assets/generated/honey_jar.png';
+import logo from '../../assets/images/logo.png';
+import grassA from '../../assets/generated/grass_a.png';
+import grassB from '../../assets/generated/grass_b.png';
+import keyRight from '../../assets/generated/key_right.png';
+import particleImg from '../../assets/generated/particle.png';
+import { GAME_HEIGHT, GAME_WIDTH } from '../utils/Constants';
+import { GAME_STATE } from '../utils/GameState';
+import { todayDateLabel } from '../utils/Daily';
+import { addSky, preloadSky } from '../utils/Sky';
 
-class Boot extends Phaser.Scene {
+// Mini board for the How to Play demo
+const DEMO_TILE = 48;
+const DEMO_COLS = 7;
+const DEMO_ROWS = 3;
+
+interface DemoParts {
+    caption: Phaser.GameObjects.Text;
+    cat: Phaser.GameObjects.Image;
+    jar: Phaser.GameObjects.Image;
+    key: Phaser.GameObjects.Image;
+    cellX: (col: number) => number;
+    midY: number;
+}
+
+class Start extends Phaser.Scene {
     constructor() {
         super({ key: 'Start' });
     }
 
     preload(): void {
-        // Load game assets
-        this.load.image('play', play);
-        this.load.image('button', playbutton);
-
+        preloadSky(this);
+        if (!this.textures.exists('button_dark')) this.load.image('button_dark', buttonDark);
+        if (!this.textures.exists('button_red')) this.load.image('button_red', buttonRed);
+        if (!this.textures.exists('grass_a')) this.load.image('grass_a', grassA);
+        if (!this.textures.exists('grass_b')) this.load.image('grass_b', grassB);
+        if (!this.textures.exists('particle')) this.load.image('particle', particleImg);
+        this.load.image('title_cat', catIdle);
+        this.load.image('title_honey', honey);
+        this.load.image('logo', logo);
+        this.load.image('key_right', keyRight);
+        this.add.text(0, 0, "preloadFont", {fontFamily: 'PixelFont', fontSize: '0px'});
     }
 
     create(): void {
-        let centerX = this.cameras.main.width / 2;
-        let centerY = this.cameras.main.height / 2;
-        let background = this.add.image(centerX, centerY, 'play').setOrigin(0.5, 0.5);
-        background.setScale(.36);
+        this.cameras.main.fadeIn(400, 0, 0, 0);
 
-        let button = new Button(this, centerX, centerY + 170, 'button', 0xffffff, this.startGame.bind(this));
-        button.setScale(.36);
-        this.add.existing(button)
+        addSky(this);
+
+        const centerX = GAME_WIDTH / 2;
+
+        const logoImage = this.add.image(centerX, 170, 'logo');
+        logoImage.setScale(Math.min(340, GAME_WIDTH - 40) / logoImage.width);
+
+        const cat = this.add.image(centerX - 55, 360, 'title_cat');
+        cat.setScale(0.85);
+        this.add.image(centerX + 90, 390, 'title_honey').setScale(3.5);
+
+        // Gentle idle bob so the title screen feels alive
+        this.tweens.add({
+            targets: cat,
+            y: 350,
+            duration: 1200,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut',
+        });
+
+        this.addButton(centerX, GAME_HEIGHT - 250, 'button_red', `DAILY · ${todayDateLabel()}`, () => this.startGame('daily'));
+        this.addButton(centerX, GAME_HEIGHT - 180, 'button_dark', 'ENDLESS', () => this.showEndlessChooser());
+        this.addButton(centerX, GAME_HEIGHT - 110, 'button_dark', 'HOW TO PLAY', () => this.showHowToPlay());
+
+        this.add.text(centerX, GAME_HEIGHT - 50, 'M TO MUTE', {
+            fontFamily: 'PixelFont',
+            fontSize: '11px',
+            color: '#1f4e6e',
+        }).setOrigin(0.5);
+
+        // First visit: open the instructions unprompted, Wordle-style
+        try {
+            if (!localStorage.getItem('neko-help-seen')) {
+                localStorage.setItem('neko-help-seen', '1');
+                this.showHowToPlay();
+            }
+        } catch {
+            // storage unavailable — the button is still there
+        }
     }
 
-    startGame(): void {
-        // Create a black rectangle to cover the screen
-        const blackBox = this.add.graphics();
-        blackBox.fillStyle(0x000000); // Set the fill color to black (hexadecimal)
-        blackBox.fillRect(0, 0, this.cameras.main.width, this.cameras.main.height);
-        blackBox.alpha = 0;
-    
-        console.log('start game');
-        this.tweens.add({
-            targets: blackBox,
-            alpha: 1,
-            duration: 1000, // Adjust the duration as needed.
-            onComplete: () => {
-              // Transition to the next scene once the fade-out is complete.
-              this.scene.start('Play');
-            },
-          });
+    // Full-screen dark layer that swallows clicks; tapping it closes the overlay
+    private makeOverlay(): Phaser.GameObjects.Container {
+        const overlay = this.add.container(0, 0).setDepth(100);
+        const dim = this.add.rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, 0x0c100a, 0.96)
+            .setOrigin(0)
+            .setInteractive({ useHandCursor: true });
+        dim.on(Phaser.Input.Events.GAMEOBJECT_POINTER_UP, () => overlay.destroy());
+        overlay.add(dim);
+        return overlay;
+    }
+
+    private showEndlessChooser(): void {
+        const overlay = this.makeOverlay();
+        const centerX = GAME_WIDTH / 2;
+
+        overlay.add(this.add.text(centerX, 230, 'ENDLESS', {
+            fontFamily: 'PixelFont',
+            fontSize: '26px',
+            color: '#f2d032',
+            stroke: '#0c100a',
+            strokeThickness: 6,
+        }).setOrigin(0.5));
+
+        this.addButton(centerX, 330, 'button_red', 'NORMAL', () => {
+            GAME_STATE.difficulty = 'normal';
+            this.startGame('endless');
+        }, overlay);
+        overlay.add(this.add.text(centerX, 372, 'EASES YOU IN', {
+            fontFamily: 'PixelFont',
+            fontSize: '10px',
+            color: '#93ab88',
+        }).setOrigin(0.5));
+
+        this.addButton(centerX, 440, 'button_dark', 'HARD', () => {
+            GAME_STATE.difficulty = 'hard';
+            this.startGame('endless');
+        }, overlay);
+        overlay.add(this.add.text(centerX, 482, 'BIGGER BOARDS, MORE JARS', {
+            fontFamily: 'PixelFont',
+            fontSize: '10px',
+            color: '#93ab88',
+        }).setOrigin(0.5));
+
+        overlay.add(this.add.text(centerX, GAME_HEIGHT - 60, 'TAP ANYWHERE ELSE TO GO BACK', {
+            fontFamily: 'PixelFont',
+            fontSize: '11px',
+            color: '#93ab88',
+        }).setOrigin(0.5));
+    }
+
+    private showHowToPlay(): void {
+        const overlay = this.makeOverlay();
+        const centerX = GAME_WIDTH / 2;
+
+        overlay.add(this.add.text(centerX, 100, 'HOW TO PLAY', {
+            fontFamily: 'PixelFont',
+            fontSize: '26px',
+            color: '#f2d032',
+            stroke: '#0c100a',
+            strokeThickness: 6,
+        }).setOrigin(0.5));
+
+        const caption = this.add.text(centerX, 180, '', {
+            fontFamily: 'PixelFont',
+            fontSize: '14px',
+            color: '#f4efe2',
+        }).setOrigin(0.5);
+        overlay.add(caption);
+
+        // Mini board: checkered grass framed by a wall, one cat, one jar
+        const boardX = centerX - (DEMO_COLS * DEMO_TILE) / 2;
+        const boardY = 240;
+        for (let row = 0; row < DEMO_ROWS; row++) {
+            for (let col = 0; col < DEMO_COLS; col++) {
+                overlay.add(this.add.image(
+                    boardX + col * DEMO_TILE + DEMO_TILE / 2,
+                    boardY + row * DEMO_TILE + DEMO_TILE / 2,
+                    (col + row) % 2 === 0 ? 'grass_a' : 'grass_b',
+                ).setScale(DEMO_TILE / 32));
+            }
+        }
+        const frame = this.add.graphics();
+        frame.lineStyle(6, 0x2c5e36, 1);
+        frame.strokeRect(boardX - 4, boardY - 4, DEMO_COLS * DEMO_TILE + 8, DEMO_ROWS * DEMO_TILE + 8);
+        overlay.add(frame);
+
+        const cellX = (col: number) => boardX + col * DEMO_TILE + DEMO_TILE / 2;
+        const midY = boardY + DEMO_TILE * 1.5;
+
+        const jar = this.add.image(cellX(4), midY, 'title_honey').setScale(1.4);
+        const cat = this.add.image(cellX(0), midY, 'title_cat').setScale(0.19);
+        overlay.add(jar);
+        overlay.add(cat);
+
+        const key = this.add.image(centerX, 460, 'key_right').setScale(2.2);
+        overlay.add(key);
+
+        overlay.add(this.add.text(centerX, GAME_HEIGHT - 110, 'CLEAR EVERY JAR · NEW DAILY PUZZLE AT MIDNIGHT', {
+            fontFamily: 'PixelFont',
+            fontSize: '11px',
+            color: '#93ab88',
+        }).setOrigin(0.5));
+        overlay.add(this.add.text(centerX, GAME_HEIGHT - 60, 'TAP ANYWHERE TO CLOSE', {
+            fontFamily: 'PixelFont',
+            fontSize: '11px',
+            color: '#93ab88',
+        }).setOrigin(0.5));
+
+        this.runDemo(overlay, { caption, cat, jar, key, cellX, midY });
+    }
+
+    // One loop of the demo: slide into the jar (collect), then into the wall
+    // (crash), then reset and repeat. Every async hop checks the overlay is
+    // still alive so closing it stops the show.
+    private runDemo(overlay: Phaser.GameObjects.Container, parts: DemoParts): void {
+        if (!overlay.active) return;
+        const { caption, cat, jar, key, cellX, midY } = parts;
+
+        cat.setPosition(cellX(0), midY).setAlpha(1);
+        jar.setScale(1.4);
+        caption.setText('SWIPE OR PRESS AN ARROW KEY');
+
+        const pressKey = () => this.tweens.add({ targets: key, scale: 1.8, duration: 90, yoyo: true });
+
+        this.time.delayedCall(800, () => {
+            if (!overlay.active) return;
+            pressKey();
+            this.tweens.add({
+                targets: cat,
+                x: cellX(4),
+                duration: 480,
+                ease: 'Linear',
+                onComplete: () => {
+                    if (!overlay.active) return;
+                    caption.setText('NEKO SLIDES UNTIL HE GRABS A JAR!');
+                    this.burst(overlay, cellX(4), midY);
+                    this.tweens.add({ targets: jar, scale: 0, duration: 150 });
+                    this.time.delayedCall(1400, () => {
+                        if (!overlay.active) return;
+                        caption.setText("DON'T HIT THE WALLS!");
+                        pressKey();
+                        this.tweens.add({
+                            targets: cat,
+                            x: cellX(6) + DEMO_TILE / 2 - 10,
+                            duration: 300,
+                            ease: 'Linear',
+                            onComplete: () => {
+                                if (!overlay.active) return;
+                                cat.setAlpha(0);
+                                this.burst(overlay, cellX(6) + DEMO_TILE / 2, midY, 0xff7d6a);
+                                this.time.delayedCall(1500, () => this.runDemo(overlay, parts));
+                            },
+                        });
+                    });
+                },
+            });
+        });
+    }
+
+    private burst(overlay: Phaser.GameObjects.Container, x: number, y: number, tint?: number): void {
+        for (let i = 0; i < 8; i++) {
+            const angle = (Math.PI * 2 * i) / 8;
+            const p = this.add.image(x, y, 'particle').setScale(2);
+            if (tint !== undefined) p.setTint(tint);
+            overlay.add(p);
+            this.tweens.add({
+                targets: p,
+                x: x + Math.cos(angle) * 42,
+                y: y + Math.sin(angle) * 42,
+                alpha: 0,
+                scale: 0.5,
+                duration: 380,
+                onComplete: () => p.destroy(),
+            });
+        }
+    }
+
+    private addButton(x: number, y: number, texture: string, label: string, onClick: () => void, container?: Phaser.GameObjects.Container): Phaser.GameObjects.Text {
+        const pill = this.add.image(x, y, texture).setScale(1.8).setInteractive({ useHandCursor: true });
+        pill.on(Phaser.Input.Events.GAMEOBJECT_POINTER_UP, onClick);
+        pill.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OVER, () => pill.setTint(0xddeecc));
+        pill.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT, () => pill.clearTint());
+        const text = this.add.text(x, y, label, {
+            fontFamily: 'PixelFont',
+            fontSize: '15px',
+            color: '#f4efe2',
+            stroke: '#0c100a',
+            strokeThickness: 4,
+        }).setOrigin(0.5);
+        if (container) {
+            container.add(pill);
+            container.add(text);
+        }
+        return text;
+    }
+
+    startGame(mode: 'endless' | 'daily'): void {
+        GAME_STATE.mode = mode;
+        this.cameras.main.fadeOut(400, 0, 0, 0);
+        this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
+            this.scene.start('Play');
+        });
     }
 }
 
-export default Boot;
+export default Start;

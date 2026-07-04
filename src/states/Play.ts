@@ -1,25 +1,40 @@
 import Phaser from 'phaser';
 import { GameBoard } from '../objects/GameBoard';
-import box from '../../assets/images/honey.png';
-import character from '../../assets/images/cow.png';
+import box from '../../assets/generated/honey_jar.png';
 import catIdleLeft from '../../assets/images/cat_left_idle.png';
 import catIdleRight from '../../assets/images/cat_right_idle.png';
 import catJumpLeft from '../../assets/images/cat_jump_left.png';
 import catJumpRight from '../../assets/images/cat_jump_right.png';
-
-import board from '../../assets/images/board.png';
-import grassTileTwo from '../../assets/images/sprite_background_3.png';
-import wall from '../../assets/images/wall.png';
-import background from '../../assets/images/gameboardbackground.png';
-import { GAME_STATE } from '../utils/GameState';
+import grassA from '../../assets/generated/grass_a.png';
+import grassB from '../../assets/generated/grass_b.png';
+import grassC from '../../assets/generated/grass_c.png';
+import grassD from '../../assets/generated/grass_d.png';
+import wall from '../../assets/generated/wall.png';
+import particle from '../../assets/generated/particle.png';
+import heart from '../../assets/generated/heart.png';
+import buttonDark from '../../assets/generated/button_dark.png';
+import { addSky, preloadSky } from '../utils/Sky';
+import sfxJump from '../../assets/generated/sfx_jump.wav';
+import sfxCollect from '../../assets/generated/sfx_collect.wav';
+import sfxDeath from '../../assets/generated/sfx_death.wav';
+import sfxClear from '../../assets/generated/sfx_clear.wav';
+import { GAME_STATE, resetGameState } from '../utils/GameState';
 import { LevelManager } from '../utils/LevelManager';
 import BoardInitializer from '../utils/BoardInitializer';
 import Scoreboard from '../utils/Scoreboard';
+import { GAME_HEIGHT, GAME_WIDTH } from '../utils/Constants';
+
+// A held key only re-fires this long after the cat lands (DAS-style repeat
+// delay), so an ordinary tap that outlasts a short slide can't double-move
+const HOLD_REPEAT_DELAY_MS = 180;
 
 class Play extends Phaser.Scene {
     private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
+    private wasd?: Record<'W' | 'A' | 'S' | 'D', Phaser.Input.Keyboard.Key>;
     private gameBoard?: GameBoard;
     private scoreBoard?: Scoreboard;
+    private wasMovable = false;
+    private landedAt = 0;
     public emitter: any;
 
 
@@ -29,117 +44,198 @@ class Play extends Phaser.Scene {
 
     preload(): void {
         this.cursors = this.input?.keyboard?.createCursorKeys();
-        this.load.image('character', character);
+        this.wasd = this.input?.keyboard?.addKeys('W,A,S,D') as Play['wasd'];
         this.load.image('cat_idle_left', catIdleLeft);
         this.load.image('cat_idle_right', catIdleRight);
         this.load.image('box', box);
-        this.load.image('board', board);
-        this.load.image('grass', grassTileTwo);
+        this.load.image('grass_a', grassA);
+        this.load.image('grass_b', grassB);
+        this.load.image('grass_c', grassC);
+        this.load.image('grass_d', grassD);
         this.load.image('wall', wall);
-        this.load.image('background', background);
+        this.load.image('particle', particle);
+        this.load.image('heart', heart);
+        preloadSky(this);
+        if (!this.textures.exists('button_dark')) this.load.image('button_dark', buttonDark);
+        this.load.audio('sfx_jump', sfxJump);
+        this.load.audio('sfx_collect', sfxCollect);
+        this.load.audio('sfx_death', sfxDeath);
+        this.load.audio('sfx_clear', sfxClear);
         this.add.text(0, 0, "preloadFont", {fontFamily: 'PixelFont', fontSize: '0px'});
         this.load.spritesheet('catJumpLeft', catJumpLeft, { frameWidth: 225, frameHeight: 225 });
         this.load.spritesheet('catJumpRight', catJumpRight, { frameWidth: 225, frameHeight: 225 });
     }
 
     create(): void {
-    this.fadeIn();
+        resetGameState();
+        this.cameras.main.fadeIn(500, 0, 0, 0);
+        this.drawBackdrop();
+        this.setupSwipeInput();
+        this.input.keyboard?.on('keydown-M', () => {
+            this.sound.mute = !this.sound.mute;
+        });
 
-    this.emitter = this.add.particles(0, 0, 'character', {
-        alpha: { start: 1, end: 0 },                  // Fading out over time
-        scale: { start: .1, end: .05 },              // Starting small, growing larger
-        tint: [0xff0000, 0x00ff00, 0x0000ff],         // Cycling through Red, Green, Blue tints
-        speed: 200,                                   // Pretty fast particles
-        angle: { min: 0, max: 360 },                  // Emitted in all directions
-        rotate: { min: -180, max: 180 },              // Random rotations
-        lifespan: { min: 500, max: 2000 },            // Between 0.5 and 2 seconds lifespan
-        frequency: 50,                                // Emit a particle every 50ms
-        maxParticles: 100,                            // Maximum of 100 particles at once
-        blendMode: 'ADD',                             // Additive blend mode for glows
-        radial: true,                                 // Emit particles in a radial pattern
-        gravityY: 300,                
-        emitting: false,
-    });
+        this.emitter = this.add.particles(0, 0, 'particle', {
+            alpha: { start: 1, end: 0 },
+            scale: { start: 2, end: 0.5 },
+            tint: [0xffffff, 0xffe08a, 0xf2b134],
+            speed: 200,
+            angle: { min: 0, max: 360 },
+            rotate: { min: -180, max: 180 },
+            lifespan: { min: 500, max: 2000 },
+            frequency: 50,
+            maxParticles: 100,
+            blendMode: 'ADD',
+            radial: true,
+            gravityY: 300,
+            emitting: false,
+        });
 
-    this.anims.create({
-        key: 'jumpLeft',
-        frames: this.anims.generateFrameNumbers('catJumpLeft', { start: 0, end: 2 }), // Use frames 0 and 1 for the animation
-        frameRate: 10,
-        repeat: 0
-    });
+        if (!this.anims.exists('jumpLeft')) {
+            this.anims.create({
+                key: 'jumpLeft',
+                frames: this.anims.generateFrameNumbers('catJumpLeft', { start: 0, end: 2 }),
+                frameRate: 10,
+                repeat: 0
+            });
 
-    this.anims.create({
-        key: 'jumpRight',
-        frames: this.anims.generateFrameNumbers('catJumpRight', { start: 0, end: 2 }), // Use frames 0 and 1 for the animation
-        frameRate: 10,
-        repeat: 0
-    });
+            this.anims.create({
+                key: 'jumpRight',
+                frames: this.anims.generateFrameNumbers('catJumpRight', { start: 0, end: 2 }),
+                frameRate: 10,
+                repeat: 0
+            });
+        }
 
+        const levelManager = new LevelManager(this);
+        const boardInitializer = new BoardInitializer(this);
+        this.gameBoard = new GameBoard(this, boardInitializer, levelManager);
+        this.scoreBoard = new Scoreboard(this);
+        this.addBottomButtons();
+
+        this.emitter.setDepth(1);
+    }
+
+    private addBottomButtons(): void {
+        const y = GAME_HEIGHT - 48;
+        this.addPill(GAME_WIDTH / 2 - 110, y, 'MENU', () => {
+            this.scene.start('Start');
+        });
+        const otherMode = GAME_STATE.mode === 'daily' ? 'endless' : 'daily';
+        this.addPill(GAME_WIDTH / 2 + 110, y, otherMode.toUpperCase(), () => {
+            GAME_STATE.mode = otherMode;
+            this.scene.restart();
+        });
+    }
+
+    private addPill(x: number, y: number, label: string, onClick: () => void): void {
+        const pill = this.add.image(x, y, 'button_dark').setScale(1.6).setInteractive({ useHandCursor: true });
+        pill.on(Phaser.Input.Events.GAMEOBJECT_POINTER_UP, onClick);
+        pill.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OVER, () => pill.setTint(0xbbddaa));
+        pill.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT, () => pill.clearTint());
+        this.add.text(x, y, label, {
+            fontFamily: 'PixelFont',
+            fontSize: '14px',
+            color: '#cfe3c2',
+            stroke: '#0c100a',
+            strokeThickness: 4,
+        }).setOrigin(0.5);
     }
 
     update(): void {
         if(!this.cursors || !this.gameBoard) return;
 
-        if (Phaser.Input.Keyboard.JustDown(this.cursors.left)) {
-            GAME_STATE.character?.move('left');
-        } else if (Phaser.Input.Keyboard.JustDown(this.cursors.right)) {
-            GAME_STATE.character?.move('right');
-        } else if (Phaser.Input.Keyboard.JustDown(this.cursors.up)) {
-            GAME_STATE.character?.move('up');
-        } else if (Phaser.Input.Keyboard.JustDown(this.cursors.down)) {
-            GAME_STATE.character?.move('down');
+        const pressed = this.getJustPressedDirection();
+        const held = this.getHeldDirection();
+
+        // Releasing all keys re-arms hold-to-continue (it disarms on respawn)
+        if (!held) {
+            GAME_STATE.holdInputArmed = true;
+        }
+
+        // Track when the cat last became movable (landed / respawned)
+        if (GAME_STATE.canPlayerMove && !this.wasMovable) {
+            this.landedAt = this.time.now;
+        }
+        this.wasMovable = GAME_STATE.canPlayerMove;
+
+        if (pressed) {
+            // Fresh press: moves now, or buffers if the cat is mid-slide
+            GAME_STATE.character?.move(pressed);
+        } else if (
+            held && GAME_STATE.holdInputArmed && GAME_STATE.canPlayerMove
+            && this.time.now - this.landedAt > HOLD_REPEAT_DELAY_MS
+        ) {
+            // Deliberately held past the landing: keep going that way
+            GAME_STATE.character?.move(held);
         }
 
         this.scoreBoard?.update();
     }
 
-    onBackgroundResizeComplete() {
-        console.log('Tween completed!');
-        const levelManager = new LevelManager(this);
-        const boardInitializer = new BoardInitializer(this);
-        this.gameBoard = new GameBoard(this, boardInitializer, levelManager);
-        this.scoreBoard = new Scoreboard(this);
-    
-        this.emitter.setDepth(1);
+    private getJustPressedDirection(): 'left' | 'right' | 'up' | 'down' | undefined {
+        // JustDown must be sampled for every key each frame so no press is lost
+        const left = Phaser.Input.Keyboard.JustDown(this.cursors!.left) || (this.wasd ? Phaser.Input.Keyboard.JustDown(this.wasd.A) : false);
+        const right = Phaser.Input.Keyboard.JustDown(this.cursors!.right) || (this.wasd ? Phaser.Input.Keyboard.JustDown(this.wasd.D) : false);
+        const up = Phaser.Input.Keyboard.JustDown(this.cursors!.up) || (this.wasd ? Phaser.Input.Keyboard.JustDown(this.wasd.W) : false);
+        const down = Phaser.Input.Keyboard.JustDown(this.cursors!.down) || (this.wasd ? Phaser.Input.Keyboard.JustDown(this.wasd.S) : false);
+        if (left) return 'left';
+        if (right) return 'right';
+        if (up) return 'up';
+        if (down) return 'down';
+        return undefined;
     }
 
-    fadeIn() {
-        // Create a black rectangle to cover the screen
-        // this.physics.world.createDebugGraphic();
-        const blackBox = this.add.graphics();
-        blackBox.fillStyle(0x000000); // Set the fill color to black (hexadecimal)
-        blackBox.fillRect(0, 0, this.cameras.main.width, this.cameras.main.height);
-        blackBox.setDepth(2);
+    private getHeldDirection(): 'left' | 'right' | 'up' | 'down' | undefined {
+        if (this.cursors!.left.isDown || this.wasd?.A.isDown) return 'left';
+        if (this.cursors!.right.isDown || this.wasd?.D.isDown) return 'right';
+        if (this.cursors!.up.isDown || this.wasd?.W.isDown) return 'up';
+        if (this.cursors!.down.isDown || this.wasd?.S.isDown) return 'down';
+        return undefined;
+    }
 
-        console.log('start game');
+    private setupSwipeInput(): void {
+        const dragThreshold = 32; // px of drag that commits a move immediately
+        const flickThreshold = 18; // px for a quick tap-flick released early
+        let anchorX = 0;
+        let anchorY = 0;
+        let movedThisGesture = false;
 
-        let centerX = this.cameras.main.width / 2;
-        let centerY = this.cameras.main.height / 2;
-        let background = this.add.image(centerX, centerY, 'background').setOrigin(0.5, 0.5);
-        background.setScale(.353);
-        this.tweens.add({
-            targets: blackBox,
-            alpha: 0,
-            ease: 'Linear', // Use a linear easing
-            duration: 1000, // Adjust the duration as needed.
-            onComplete: () => {
-                this.createBackground(background);
-                // Transition to the next scene once the fade-out is complete.
-            },
+        const directionFrom = (dx: number, dy: number) =>
+            Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' as const : 'left' as const) : (dy > 0 ? 'down' as const : 'up' as const);
+
+        this.input.on(Phaser.Input.Events.POINTER_DOWN, (pointer: Phaser.Input.Pointer) => {
+            anchorX = pointer.x;
+            anchorY = pointer.y;
+            movedThisGesture = false;
+        });
+
+        // Fire as soon as the drag crosses the threshold — not on release — and
+        // re-anchor so continued dragging chains moves without lifting
+        this.input.on(Phaser.Input.Events.POINTER_MOVE, (pointer: Phaser.Input.Pointer) => {
+            if (!pointer.isDown) return;
+            const dx = pointer.x - anchorX;
+            const dy = pointer.y - anchorY;
+            if (Math.max(Math.abs(dx), Math.abs(dy)) < dragThreshold) return;
+
+            GAME_STATE.character?.move(directionFrom(dx, dy));
+            anchorX = pointer.x;
+            anchorY = pointer.y;
+            movedThisGesture = true;
+        });
+
+        // Fallback so a short, fast flick released before the drag threshold still counts
+        this.input.on(Phaser.Input.Events.POINTER_UP, (pointer: Phaser.Input.Pointer) => {
+            if (movedThisGesture) return;
+            const dx = pointer.upX - pointer.downX;
+            const dy = pointer.upY - pointer.downY;
+            if (Math.max(Math.abs(dx), Math.abs(dy)) < flickThreshold) return;
+            GAME_STATE.character?.move(directionFrom(dx, dy));
         });
     }
-    
-    createBackground(back: Phaser.GameObjects.Image){
-        console.log("Asd");
-        this.tweens.add({
-            targets: back,
-            scaleX: .48, // Scale up to 200%
-            scaleY: .55, // Scale up to 200%
-            ease: 'Linear', // Use a linear easing
-            duration: 1000, // 3000 milliseconds = 3 seconds
-            delay: 1000,
-            onComplete: this.onBackgroundResizeComplete.bind(this)
-        });
+
+    private drawBackdrop(): void {
+        addSky(this);
     }
 }
 

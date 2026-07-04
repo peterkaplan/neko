@@ -7,6 +7,7 @@ dist/
 # TypeScript compiled Javascript files
 *.js
 *.js.map
+!webpack.config.js
 
 # Environment files
 .env

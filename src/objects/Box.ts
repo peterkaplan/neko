@@ -1,7 +1,5 @@
 import Phaser from 'phaser';
-import { LEFT_MARGIN, TOP_MARGIN } from '../utils/Constants';
-import Character from './Character';
-import { GET_SCALE_SIZE, GET_X_FROM_INDEX, GET_Y_FROM_INDEX } from '../utils/GameState';
+import { GET_TILE_SIZE, GET_X_FROM_INDEX, GET_Y_FROM_INDEX } from '../utils/GameState';
 
 export class Box {
     private scene: Phaser.Scene;
@@ -18,7 +16,7 @@ export class Box {
         this.sprite = this.scene.physics.add.sprite(GET_X_FROM_INDEX(x), GET_Y_FROM_INDEX(y), 'box');
 
         this.sprite.setOrigin(0);
-        this.sprite.setScale( GET_SCALE_SIZE() - .01); 
+        this.sprite.setDisplaySize(GET_TILE_SIZE() - 1, GET_TILE_SIZE() - 1);
 
         // Enable physics on the box
         this.scene.physics.world.enable(this.sprite);

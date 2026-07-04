@@ -3,13 +3,17 @@ import Play from './states/Play';
 
 import 'phaser';
 import Start from './states/Start';
+import GameOver from './states/GameOver';
+import DailyClear from './states/DailyClear';
+import { GAME_HEIGHT, GAME_WIDTH } from './utils/Constants';
 
 const gameConfig: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
     parent: 'canvasWrapper',
-    width: 360,
-    height: 640,
-    scene: [Boot, Start, Play],
+    width: GAME_WIDTH,
+    height: GAME_HEIGHT,
+    pixelArt: true,
+    scene: [Boot, Start, Play, GameOver, DailyClear],
     physics: {
         default: 'arcade',
         arcade: {
@@ -18,8 +22,11 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
     },
     scale: {
         mode: Phaser.Scale.FIT,
-      //  autoCenter: Phaser.Scale.CENTER_BOTH
+        autoCenter: Phaser.Scale.CENTER_BOTH
     }
 };
 
 const game = new Phaser.Game(gameConfig);
+
+// Handy for debugging and driving the game from tests
+(window as any).game = game;
