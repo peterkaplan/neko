@@ -277,7 +277,11 @@ class Start extends Phaser.Scene {
 
     private addButton(x: number, y: number, texture: string, label: string, onClick: () => void, container?: Phaser.GameObjects.Container): Phaser.GameObjects.Text {
         const pill = this.add.image(x, y, texture).setScale(1.8).setInteractive({ useHandCursor: true });
-        pill.on(Phaser.Input.Events.GAMEOBJECT_POINTER_UP, onClick);
+        // Taps only, so stray swipes don't trigger buttons
+        pill.on(Phaser.Input.Events.GAMEOBJECT_POINTER_UP, (pointer: Phaser.Input.Pointer) => {
+            if (Math.max(Math.abs(pointer.upX - pointer.downX), Math.abs(pointer.upY - pointer.downY)) > 12) return;
+            onClick();
+        });
         pill.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OVER, () => pill.setTint(0xddeecc));
         pill.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT, () => pill.clearTint());
         const text = this.add.text(x, y, label, {

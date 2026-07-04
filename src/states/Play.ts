@@ -129,7 +129,11 @@ class Play extends Phaser.Scene {
 
     private addPill(x: number, y: number, label: string, onClick: () => void): void {
         const pill = this.add.image(x, y, 'button_dark').setScale(1.6).setInteractive({ useHandCursor: true });
-        pill.on(Phaser.Input.Events.GAMEOBJECT_POINTER_UP, onClick);
+        // Taps only: a swipe that starts or ends on the button must not click it
+        pill.on(Phaser.Input.Events.GAMEOBJECT_POINTER_UP, (pointer: Phaser.Input.Pointer) => {
+            if (Math.max(Math.abs(pointer.upX - pointer.downX), Math.abs(pointer.upY - pointer.downY)) > 12) return;
+            onClick();
+        });
         pill.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OVER, () => pill.setTint(0xbbddaa));
         pill.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT, () => pill.clearTint());
         this.add.text(x, y, label, {
