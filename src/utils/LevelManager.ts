@@ -61,14 +61,14 @@ export class LevelManager {
         const hard = GAME_STATE.difficulty === 'hard';
         for (let i = 0; i < 50; i++) {
             const size = hard
-                ? Math.min(9 + Math.floor(i / 2), 14)
+                ? Math.min(10 + Math.floor(i / 2), 14)
                 : Math.min(8 + Math.floor(i / 3), 12);
             GAME_STATE.levelConfigs.push({
                 level_number: i + 1,
                 board_width: size,
                 board_height: size,
                 number_of_boxes: hard
-                    ? Math.min(5 + Math.floor((i * 2) / 3), 14)
+                    ? Math.min(7 + i, 14)
                     : Math.min(3 + Math.floor(i / 2), 10),
             });
         }
