@@ -14,6 +14,7 @@ import particle from '../../assets/generated/particle.png';
 import heart from '../../assets/generated/heart.png';
 import buttonDark from '../../assets/generated/button_dark.png';
 import { addSky, preloadSky } from '../utils/Sky';
+import { recordEndlessScore } from '../utils/HighScores';
 import sfxJump from '../../assets/generated/sfx_jump.wav';
 import sfxCollect from '../../assets/generated/sfx_collect.wav';
 import sfxDeath from '../../assets/generated/sfx_death.wav';
@@ -116,14 +117,12 @@ class Play extends Phaser.Scene {
     }
 
     private addBottomButtons(): void {
-        const y = GAME_HEIGHT - 48;
-        this.addPill(GAME_WIDTH / 2 - 110, y, 'MENU', () => {
+        this.addPill(GAME_WIDTH / 2, GAME_HEIGHT - 48, 'MENU', () => {
+            // Quitting mid-run still counts toward the endless high score
+            if (GAME_STATE.mode === 'endless') {
+                recordEndlessScore(GAME_STATE.difficulty, GAME_STATE.score);
+            }
             this.scene.start('Start');
-        });
-        const otherMode = GAME_STATE.mode === 'daily' ? 'endless' : 'daily';
-        this.addPill(GAME_WIDTH / 2 + 110, y, otherMode.toUpperCase(), () => {
-            GAME_STATE.mode = otherMode;
-            this.scene.restart();
         });
     }
 

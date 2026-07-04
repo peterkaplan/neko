@@ -12,6 +12,7 @@ import { GAME_HEIGHT, GAME_WIDTH } from '../utils/Constants';
 import { GAME_STATE } from '../utils/GameState';
 import { todayDateLabel } from '../utils/Daily';
 import { addSky, preloadSky } from '../utils/Sky';
+import { getEndlessBest } from '../utils/HighScores';
 
 // Mini board for the How to Play demo
 const DEMO_TILE = 48;
@@ -118,7 +119,8 @@ class Start extends Phaser.Scene {
             GAME_STATE.difficulty = 'normal';
             this.startGame('endless');
         }, overlay);
-        overlay.add(this.add.text(centerX, 372, 'EASES YOU IN', {
+        const bestNormal = getEndlessBest('normal');
+        overlay.add(this.add.text(centerX, 372, bestNormal > 0 ? `EASES YOU IN · BEST ${bestNormal}` : 'EASES YOU IN', {
             fontFamily: 'PixelFont',
             fontSize: '10px',
             color: '#93ab88',
@@ -128,7 +130,8 @@ class Start extends Phaser.Scene {
             GAME_STATE.difficulty = 'hard';
             this.startGame('endless');
         }, overlay);
-        overlay.add(this.add.text(centerX, 482, 'BIGGER BOARDS, MORE JARS', {
+        const bestHard = getEndlessBest('hard');
+        overlay.add(this.add.text(centerX, 482, bestHard > 0 ? `BIGGER BOARDS, MORE JARS · BEST ${bestHard}` : 'BIGGER BOARDS, MORE JARS', {
             fontFamily: 'PixelFont',
             fontSize: '10px',
             color: '#93ab88',

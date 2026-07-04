@@ -3,6 +3,7 @@ import { GAME_HEIGHT, GAME_WIDTH } from '../utils/Constants';
 import { GAME_STATE } from '../utils/GameState';
 import { todayDateLabel } from '../utils/Daily';
 import { addSky } from '../utils/Sky';
+import { getEndlessBest, recordEndlessScore } from '../utils/HighScores';
 
 class GameOver extends Phaser.Scene {
     constructor() {
@@ -40,6 +41,18 @@ class GameOver extends Phaser.Scene {
             fontSize: '14px',
             color: '#93ab88',
         }).setOrigin(0.5);
+
+        if (GAME_STATE.mode === 'endless') {
+            const isNewBest = recordEndlessScore(GAME_STATE.difficulty, GAME_STATE.score);
+            const label = isNewBest ? 'NEW BEST!' : `BEST ${getEndlessBest(GAME_STATE.difficulty)}`;
+            this.add.text(centerX, 375, label, {
+                fontFamily: 'PixelFont',
+                fontSize: '15px',
+                color: isNewBest ? '#f2d032' : '#cfe3c2',
+                stroke: '#0c100a',
+                strokeThickness: 4,
+            }).setOrigin(0.5);
+        }
 
         this.addButton(centerX, 440, 'button_red', 'RETRY', () => this.goTo('Play'));
         this.addButton(centerX, 510, 'button_dark', 'MENU', () => this.goTo('Start'));
