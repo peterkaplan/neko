@@ -44,7 +44,6 @@ class Start extends Phaser.Scene {
         this.load.image('title_honey', honey);
         this.load.image('logo', logo);
         this.load.image('key_right', keyRight);
-        this.add.text(0, 0, "preloadFont", {fontFamily: 'PixelFont', fontSize: '0px'});
     }
 
     create(): void {

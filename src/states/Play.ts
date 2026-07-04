@@ -61,7 +61,6 @@ class Play extends Phaser.Scene {
         this.load.audio('sfx_collect', sfxCollect);
         this.load.audio('sfx_death', sfxDeath);
         this.load.audio('sfx_clear', sfxClear);
-        this.add.text(0, 0, "preloadFont", {fontFamily: 'PixelFont', fontSize: '0px'});
         this.load.spritesheet('catJumpLeft', catJumpLeft, { frameWidth: 225, frameHeight: 225 });
         this.load.spritesheet('catJumpRight', catJumpRight, { frameWidth: 225, frameHeight: 225 });
     }
