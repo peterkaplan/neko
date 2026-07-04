@@ -195,8 +195,11 @@ class Play extends Phaser.Scene {
     }
 
     private setupSwipeInput(): void {
-        const dragThreshold = 32; // px of drag that commits a move immediately
-        const flickThreshold = 18; // px for a quick tap-flick released early
+        // One gesture = one move. Every move can be fatal, so nothing fires
+        // until the finger has clearly committed to a direction, and a tap
+        // (small wobble included) never moves the cat.
+        const dragThreshold = 48; // px of drag that commits the move immediately
+        const flickThreshold = 40; // px for a flick released before the drag threshold
         let anchorX = 0;
         let anchorY = 0;
         let movedThisGesture = false;
@@ -210,21 +213,19 @@ class Play extends Phaser.Scene {
             movedThisGesture = false;
         });
 
-        // Fire as soon as the drag crosses the threshold — not on release — and
-        // re-anchor so continued dragging chains moves without lifting
+        // Fire as soon as the drag crosses the threshold — not on release —
+        // then ignore the rest of the gesture until the finger lifts
         this.input.on(Phaser.Input.Events.POINTER_MOVE, (pointer: Phaser.Input.Pointer) => {
-            if (!pointer.isDown) return;
+            if (!pointer.isDown || movedThisGesture) return;
             const dx = pointer.x - anchorX;
             const dy = pointer.y - anchorY;
             if (Math.max(Math.abs(dx), Math.abs(dy)) < dragThreshold) return;
 
             GAME_STATE.character?.move(directionFrom(dx, dy));
-            anchorX = pointer.x;
-            anchorY = pointer.y;
             movedThisGesture = true;
         });
 
-        // Fallback so a short, fast flick released before the drag threshold still counts
+        // Fallback so a fast flick released before the drag threshold still counts
         this.input.on(Phaser.Input.Events.POINTER_UP, (pointer: Phaser.Input.Pointer) => {
             if (movedThisGesture) return;
             const dx = pointer.upX - pointer.downX;
