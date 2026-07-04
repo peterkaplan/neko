@@ -25,6 +25,7 @@ interface DemoParts {
     key: Phaser.GameObjects.Image;
     cellX: (col: number) => number;
     midY: number;
+    tile: number;
 }
 
 class Start extends Phaser.Scene {
@@ -157,41 +158,48 @@ class Start extends Phaser.Scene {
             fontFamily: 'PixelFont',
             fontSize: '14px',
             color: '#f4efe2',
+            align: 'center',
+            wordWrap: { width: GAME_WIDTH - 32 },
         }).setOrigin(0.5);
         overlay.add(caption);
 
-        // Mini board: checkered grass framed by a wall, one cat, one jar
-        const boardX = centerX - (DEMO_COLS * DEMO_TILE) / 2;
+        // Mini board: checkered grass framed by a wall, one cat, one jar.
+        // Tiles shrink on narrow (phone) screens so the board always fits.
+        const tile = Math.min(DEMO_TILE, Math.floor((GAME_WIDTH - 40) / DEMO_COLS));
+        const boardX = centerX - (DEMO_COLS * tile) / 2;
         const boardY = 240;
         for (let row = 0; row < DEMO_ROWS; row++) {
             for (let col = 0; col < DEMO_COLS; col++) {
                 overlay.add(this.add.image(
-                    boardX + col * DEMO_TILE + DEMO_TILE / 2,
-                    boardY + row * DEMO_TILE + DEMO_TILE / 2,
+                    boardX + col * tile + tile / 2,
+                    boardY + row * tile + tile / 2,
                     (col + row) % 2 === 0 ? 'grass_a' : 'grass_b',
-                ).setScale(DEMO_TILE / 32));
+                ).setScale(tile / 32));
             }
         }
         const frame = this.add.graphics();
         frame.lineStyle(6, 0x2c5e36, 1);
-        frame.strokeRect(boardX - 4, boardY - 4, DEMO_COLS * DEMO_TILE + 8, DEMO_ROWS * DEMO_TILE + 8);
+        frame.strokeRect(boardX - 4, boardY - 4, DEMO_COLS * tile + 8, DEMO_ROWS * tile + 8);
         overlay.add(frame);
 
-        const cellX = (col: number) => boardX + col * DEMO_TILE + DEMO_TILE / 2;
-        const midY = boardY + DEMO_TILE * 1.5;
+        const cellX = (col: number) => boardX + col * tile + tile / 2;
+        const midY = boardY + tile * 1.5;
 
-        const jar = this.add.image(cellX(4), midY, 'title_honey').setScale(1.4);
-        const cat = this.add.image(cellX(0), midY, 'title_cat').setScale(0.19);
+        const jar = this.add.image(cellX(4), midY, 'title_honey').setScale(1.4 * (tile / DEMO_TILE));
+        const cat = this.add.image(cellX(0), midY, 'title_cat').setScale(0.19 * (tile / DEMO_TILE));
         overlay.add(jar);
         overlay.add(cat);
 
         const key = this.add.image(centerX, 460, 'key_right').setScale(2.2);
         overlay.add(key);
 
-        overlay.add(this.add.text(centerX, GAME_HEIGHT - 110, 'NEKO SLIDES UNTIL SOMETHING STOPS HIM · NEW PUZZLE AT MIDNIGHT', {
+        overlay.add(this.add.text(centerX, GAME_HEIGHT - 115, 'NEKO SLIDES UNTIL SOMETHING STOPS HIM\nNEW PUZZLE AT MIDNIGHT', {
             fontFamily: 'PixelFont',
             fontSize: '11px',
             color: '#93ab88',
+            align: 'center',
+            lineSpacing: 8,
+            wordWrap: { width: GAME_WIDTH - 32 },
         }).setOrigin(0.5));
         overlay.add(this.add.text(centerX, GAME_HEIGHT - 60, 'TAP ANYWHERE TO CLOSE', {
             fontFamily: 'PixelFont',
@@ -199,7 +207,7 @@ class Start extends Phaser.Scene {
             color: '#93ab88',
         }).setOrigin(0.5));
 
-        this.runDemo(overlay, { caption, cat, jar, key, cellX, midY });
+        this.runDemo(overlay, { caption, cat, jar, key, cellX, midY, tile });
     }
 
     // One loop of the demo: slide into the jar (collect), then into the wall
@@ -207,10 +215,10 @@ class Start extends Phaser.Scene {
     // still alive so closing it stops the show.
     private runDemo(overlay: Phaser.GameObjects.Container, parts: DemoParts): void {
         if (!overlay.active) return;
-        const { caption, cat, jar, key, cellX, midY } = parts;
+        const { caption, cat, jar, key, cellX, midY, tile } = parts;
 
         cat.setPosition(cellX(0), midY).setAlpha(1);
-        jar.setScale(1.4);
+        jar.setScale(1.4 * (tile / DEMO_TILE));
         caption.setText('SWIPE OR PRESS AN ARROW KEY');
 
         const pressKey = () => this.tweens.add({ targets: key, scale: 1.8, duration: 90, yoyo: true });
@@ -234,13 +242,13 @@ class Start extends Phaser.Scene {
                         pressKey();
                         this.tweens.add({
                             targets: cat,
-                            x: cellX(6) + DEMO_TILE / 2 - 10,
+                            x: cellX(6) + tile / 2 - 10,
                             duration: 300,
                             ease: 'Linear',
                             onComplete: () => {
                                 if (!overlay.active) return;
                                 cat.setAlpha(0);
-                                this.burst(overlay, cellX(6) + DEMO_TILE / 2, midY, 0xff7d6a);
+                                this.burst(overlay, cellX(6) + tile / 2, midY, 0xff7d6a);
                                 this.time.delayedCall(1500, () => this.runDemo(overlay, parts));
                             },
                         });
