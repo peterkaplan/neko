@@ -11,10 +11,11 @@ const OUT_FILE = join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'uti
 
 const BOARD_WIDTH = 14;  // interior 12 cols — the original game's board size
 const BOARD_HEIGHT = 14; // interior 12 rows
-const JAR_COUNT = 10;
+const JAR_COUNT = 14;
 const PUZZLE_COUNT = 7;
-// Difficulty band: at most this many valid complete orderings (11! ~ 40M possible)
-const MAX_SOLUTION_COUNT = 60;
+// Difficulty band: at most this many valid complete orderings out of the 14!
+// possible — fewer valid orderings = harder puzzle
+const MAX_SOLUTION_COUNT = 40;
 
 function mulberry32(seed) {
     return () => {

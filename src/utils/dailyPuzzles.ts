@@ -17,171 +17,61 @@ export const DAILY_PUZZLES: DailyPuzzle[] = [
         "board_width": 14,
         "board_height": 14,
         "start": {
-            "x": 4,
-            "y": 11
+            "x": 9,
+            "y": 1
         },
         "jars": [
             {
-                "x": 8,
-                "y": 6
+                "x": 2,
+                "y": 10
             },
             {
-                "x": 8,
-                "y": 8
+                "x": 7,
+                "y": 12
             },
             {
                 "x": 9,
+                "y": 6
+            },
+            {
+                "x": 3,
+                "y": 6
+            },
+            {
+                "x": 3,
+                "y": 12
+            },
+            {
+                "x": 10,
                 "y": 9
             },
             {
-                "x": 3,
-                "y": 6
-            },
-            {
-                "x": 4,
+                "x": 7,
                 "y": 4
             },
             {
-                "x": 4,
-                "y": 1
-            },
-            {
-                "x": 3,
-                "y": 1
-            },
-            {
-                "x": 8,
-                "y": 1
-            },
-            {
-                "x": 4,
-                "y": 3
-            },
-            {
                 "x": 9,
-                "y": 1
-            }
-        ],
-        "solutionCount": 1,
-        "solution": [
-            "up",
-            "up",
-            "up",
-            "left",
-            "down",
-            "right",
-            "down",
-            "up",
-            "right",
-            "down"
-        ]
-    },
-    {
-        "board_width": 14,
-        "board_height": 14,
-        "start": {
-            "x": 1,
-            "y": 12
-        },
-        "jars": [
-            {
-                "x": 10,
-                "y": 1
-            },
-            {
-                "x": 4,
-                "y": 11
-            },
-            {
-                "x": 11,
-                "y": 1
-            },
-            {
-                "x": 4,
-                "y": 12
-            },
-            {
-                "x": 12,
-                "y": 7
-            },
-            {
-                "x": 1,
-                "y": 11
-            },
-            {
-                "x": 10,
-                "y": 12
-            },
-            {
-                "x": 8,
-                "y": 12
-            },
-            {
-                "x": 9,
-                "y": 7
-            },
-            {
-                "x": 9,
-                "y": 1
-            }
-        ],
-        "solutionCount": 1,
-        "solution": [
-            "up",
-            "right",
-            "down",
-            "right",
-            "right",
-            "up",
-            "right",
-            "left",
-            "down",
-            "right"
-        ]
-    },
-    {
-        "board_width": 14,
-        "board_height": 14,
-        "start": {
-            "x": 9,
-            "y": 4
-        },
-        "jars": [
-            {
-                "x": 3,
-                "y": 3
-            },
-            {
-                "x": 7,
-                "y": 10
-            },
-            {
-                "x": 8,
                 "y": 4
             },
             {
-                "x": 8,
-                "y": 6
-            },
-            {
-                "x": 7,
-                "y": 11
-            },
-            {
-                "x": 4,
+                "x": 9,
                 "y": 10
             },
             {
-                "x": 1,
-                "y": 6
+                "x": 10,
+                "y": 3
             },
             {
-                "x": 1,
-                "y": 11
+                "x": 3,
+                "y": 9
             },
             {
                 "x": 2,
-                "y": 6
+                "y": 12
+            },
+            {
+                "x": 9,
+                "y": 2
             },
             {
                 "x": 3,
@@ -190,15 +80,19 @@ export const DAILY_PUZZLES: DailyPuzzle[] = [
         ],
         "solutionCount": 1,
         "solution": [
+            "down",
+            "down",
             "left",
             "down",
             "left",
             "left",
-            "down",
+            "up",
+            "right",
             "right",
             "up",
             "left",
-            "left",
+            "down",
+            "right",
             "up"
         ]
     },
@@ -206,188 +100,82 @@ export const DAILY_PUZZLES: DailyPuzzle[] = [
         "board_width": 14,
         "board_height": 14,
         "start": {
-            "x": 9,
-            "y": 6
-        },
-        "jars": [
-            {
-                "x": 9,
-                "y": 3
-            },
-            {
-                "x": 12,
-                "y": 6
-            },
-            {
-                "x": 7,
-                "y": 1
-            },
-            {
-                "x": 3,
-                "y": 3
-            },
-            {
-                "x": 9,
-                "y": 5
-            },
-            {
-                "x": 5,
-                "y": 6
-            },
-            {
-                "x": 12,
-                "y": 9
-            },
-            {
-                "x": 4,
-                "y": 5
-            },
-            {
-                "x": 7,
-                "y": 3
-            },
-            {
-                "x": 12,
-                "y": 1
-            }
-        ],
-        "solutionCount": 1,
-        "solution": [
-            "left",
-            "right",
-            "down",
-            "up",
-            "left",
-            "down",
-            "left",
-            "right",
-            "down",
-            "left"
-        ]
-    },
-    {
-        "board_width": 14,
-        "board_height": 14,
-        "start": {
-            "x": 12,
+            "x": 1,
             "y": 11
         },
         "jars": [
             {
-                "x": 12,
-                "y": 8
-            },
-            {
-                "x": 9,
-                "y": 8
-            },
-            {
-                "x": 8,
-                "y": 8
-            },
-            {
-                "x": 11,
-                "y": 12
-            },
-            {
-                "x": 5,
-                "y": 8
-            },
-            {
-                "x": 4,
-                "y": 8
-            },
-            {
-                "x": 7,
-                "y": 12
-            },
-            {
-                "x": 11,
-                "y": 8
-            },
-            {
                 "x": 7,
                 "y": 6
             },
             {
-                "x": 4,
-                "y": 6
-            }
-        ],
-        "solutionCount": 2,
-        "solution": [
-            "up",
-            "left",
-            "left",
-            "left",
-            "left",
-            "left",
-            "up",
-            "right",
-            "down",
-            "right"
-        ]
-    },
-    {
-        "board_width": 14,
-        "board_height": 14,
-        "start": {
-            "x": 1,
-            "y": 3
-        },
-        "jars": [
-            {
-                "x": 1,
-                "y": 5
-            },
-            {
-                "x": 10,
-                "y": 12
-            },
-            {
-                "x": 5,
-                "y": 8
-            },
-            {
-                "x": 7,
-                "y": 3
-            },
-            {
-                "x": 7,
-                "y": 12
-            },
-            {
-                "x": 10,
-                "y": 5
-            },
-            {
                 "x": 9,
-                "y": 3
+                "y": 6
+            },
+            {
+                "x": 11,
+                "y": 1
             },
             {
                 "x": 7,
                 "y": 11
             },
             {
-                "x": 5,
+                "x": 3,
+                "y": 11
+            },
+            {
+                "x": 4,
+                "y": 1
+            },
+            {
+                "x": 12,
                 "y": 3
             },
             {
-                "x": 5,
-                "y": 12
+                "x": 11,
+                "y": 6
+            },
+            {
+                "x": 10,
+                "y": 6
+            },
+            {
+                "x": 9,
+                "y": 1
+            },
+            {
+                "x": 12,
+                "y": 6
+            },
+            {
+                "x": 1,
+                "y": 6
+            },
+            {
+                "x": 2,
+                "y": 11
+            },
+            {
+                "x": 12,
+                "y": 10
             }
         ],
-        "solutionCount": 1,
+        "solutionCount": 4,
         "solution": [
-            "down",
+            "right",
+            "right",
+            "right",
+            "up",
+            "left",
+            "right",
+            "up",
+            "left",
             "right",
             "down",
             "left",
-            "up",
-            "up",
             "right",
-            "left",
-            "down",
+            "up",
             "down"
         ]
     },
@@ -395,63 +183,415 @@ export const DAILY_PUZZLES: DailyPuzzle[] = [
         "board_width": 14,
         "board_height": 14,
         "start": {
-            "x": 2,
-            "y": 11
+            "x": 6,
+            "y": 8
         },
         "jars": [
             {
-                "x": 9,
+                "x": 11,
                 "y": 6
             },
             {
-                "x": 12,
-                "y": 6
+                "x": 10,
+                "y": 8
             },
             {
-                "x": 2,
-                "y": 2
+                "x": 1,
+                "y": 10
             },
             {
-                "x": 5,
-                "y": 1
+                "x": 10,
+                "y": 12
             },
             {
                 "x": 3,
-                "y": 6
+                "y": 5
+            },
+            {
+                "x": 7,
+                "y": 10
+            },
+            {
+                "x": 1,
+                "y": 2
+            },
+            {
+                "x": 3,
+                "y": 9
+            },
+            {
+                "x": 3,
+                "y": 8
+            },
+            {
+                "x": 7,
+                "y": 5
+            },
+            {
+                "x": 11,
+                "y": 12
             },
             {
                 "x": 4,
                 "y": 2
             },
             {
-                "x": 3,
-                "y": 3
+                "x": 11,
+                "y": 5
             },
             {
                 "x": 3,
+                "y": 10
+            }
+        ],
+        "solutionCount": 2,
+        "solution": [
+            "left",
+            "right",
+            "down",
+            "right",
+            "up",
+            "up",
+            "left",
+            "left",
+            "down",
+            "down",
+            "right",
+            "left",
+            "up",
+            "right"
+        ]
+    },
+    {
+        "board_width": 14,
+        "board_height": 14,
+        "start": {
+            "x": 5,
+            "y": 3
+        },
+        "jars": [
+            {
+                "x": 4,
+                "y": 1
+            },
+            {
+                "x": 5,
+                "y": 1
+            },
+            {
+                "x": 5,
+                "y": 6
+            },
+            {
+                "x": 9,
+                "y": 1
+            },
+            {
+                "x": 6,
+                "y": 6
+            },
+            {
+                "x": 9,
+                "y": 12
+            },
+            {
+                "x": 6,
+                "y": 12
+            },
+            {
+                "x": 9,
+                "y": 9
+            },
+            {
+                "x": 10,
+                "y": 3
+            },
+            {
+                "x": 9,
                 "y": 2
             },
             {
                 "x": 5,
+                "y": 4
+            },
+            {
+                "x": 3,
                 "y": 3
             },
             {
-                "x": 5,
+                "x": 10,
+                "y": 12
+            },
+            {
+                "x": 3,
                 "y": 2
+            }
+        ],
+        "solutionCount": 7,
+        "solution": [
+            "right",
+            "left",
+            "up",
+            "right",
+            "up",
+            "down",
+            "down",
+            "right",
+            "left",
+            "up",
+            "left",
+            "up",
+            "up",
+            "left"
+        ]
+    },
+    {
+        "board_width": 14,
+        "board_height": 14,
+        "start": {
+            "x": 6,
+            "y": 5
+        },
+        "jars": [
+            {
+                "x": 1,
+                "y": 1
+            },
+            {
+                "x": 6,
+                "y": 10
+            },
+            {
+                "x": 9,
+                "y": 7
+            },
+            {
+                "x": 12,
+                "y": 9
+            },
+            {
+                "x": 12,
+                "y": 8
+            },
+            {
+                "x": 5,
+                "y": 8
+            },
+            {
+                "x": 11,
+                "y": 10
+            },
+            {
+                "x": 12,
+                "y": 10
+            },
+            {
+                "x": 9,
+                "y": 10
+            },
+            {
+                "x": 5,
+                "y": 5
+            },
+            {
+                "x": 1,
+                "y": 2
+            },
+            {
+                "x": 11,
+                "y": 12
+            },
+            {
+                "x": 1,
+                "y": 5
+            },
+            {
+                "x": 9,
+                "y": 1
             }
         ],
         "solutionCount": 1,
         "solution": [
-            "up",
-            "right",
-            "right",
+            "down",
             "right",
             "up",
+            "up",
+            "left",
+            "down",
+            "down",
+            "right",
+            "down",
+            "right",
+            "down",
+            "down",
+            "left",
+            "down"
+        ]
+    },
+    {
+        "board_width": 14,
+        "board_height": 14,
+        "start": {
+            "x": 7,
+            "y": 4
+        },
+        "jars": [
+            {
+                "x": 9,
+                "y": 1
+            },
+            {
+                "x": 7,
+                "y": 7
+            },
+            {
+                "x": 7,
+                "y": 1
+            },
+            {
+                "x": 5,
+                "y": 8
+            },
+            {
+                "x": 6,
+                "y": 3
+            },
+            {
+                "x": 4,
+                "y": 8
+            },
+            {
+                "x": 4,
+                "y": 2
+            },
+            {
+                "x": 6,
+                "y": 8
+            },
+            {
+                "x": 5,
+                "y": 5
+            },
+            {
+                "x": 4,
+                "y": 3
+            },
+            {
+                "x": 9,
+                "y": 2
+            },
+            {
+                "x": 9,
+                "y": 5
+            },
+            {
+                "x": 9,
+                "y": 3
+            },
+            {
+                "x": 5,
+                "y": 10
+            }
+        ],
+        "solutionCount": 2,
+        "solution": [
+            "down",
+            "up",
+            "right",
             "down",
             "left",
             "down",
+            "down",
             "right",
-            "right"
+            "right",
+            "up",
+            "right",
+            "down",
+            "left",
+            "down"
+        ]
+    },
+    {
+        "board_width": 14,
+        "board_height": 14,
+        "start": {
+            "x": 12,
+            "y": 6
+        },
+        "jars": [
+            {
+                "x": 8,
+                "y": 7
+            },
+            {
+                "x": 1,
+                "y": 5
+            },
+            {
+                "x": 1,
+                "y": 11
+            },
+            {
+                "x": 10,
+                "y": 2
+            },
+            {
+                "x": 4,
+                "y": 4
+            },
+            {
+                "x": 8,
+                "y": 4
+            },
+            {
+                "x": 1,
+                "y": 10
+            },
+            {
+                "x": 1,
+                "y": 4
+            },
+            {
+                "x": 5,
+                "y": 10
+            },
+            {
+                "x": 5,
+                "y": 2
+            },
+            {
+                "x": 10,
+                "y": 4
+            },
+            {
+                "x": 8,
+                "y": 10
+            },
+            {
+                "x": 1,
+                "y": 6
+            },
+            {
+                "x": 11,
+                "y": 6
+            }
+        ],
+        "solutionCount": 6,
+        "solution": [
+            "left",
+            "left",
+            "up",
+            "down",
+            "down",
+            "up",
+            "right",
+            "right",
+            "right",
+            "up",
+            "left",
+            "down",
+            "right",
+            "up"
         ]
     }
 ];
