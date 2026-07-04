@@ -1,6 +1,9 @@
 const path = require('path');
+const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+
+require('dotenv').config();
 
 module.exports = (env, argv) => ({
     entry: './src/index.ts',
@@ -28,6 +31,10 @@ module.exports = (env, argv) => ({
         ],
     },
     plugins: [
+        new webpack.DefinePlugin({
+            'process.env.POSTHOG_API_KEY': JSON.stringify(process.env.POSTHOG_API_KEY || ''),
+            'process.env.POSTHOG_HOST': JSON.stringify(process.env.POSTHOG_HOST || 'https://us.i.posthog.com'),
+        }),
         new HtmlWebpackPlugin({
             template: 'index.html',
         }),
@@ -45,5 +52,10 @@ module.exports = (env, argv) => ({
         static: path.resolve(__dirname, '.'),
         port: 8080,
         open: false,
+        devMiddleware: {
+            // output.publicPath is relative for GitHub Pages; serving in dev
+            // must stay rooted or the on-disk index.html shadows the bundle
+            publicPath: '/',
+        },
     },
 });

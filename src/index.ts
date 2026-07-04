@@ -7,6 +7,7 @@ import GameOver from './states/GameOver';
 import DailyClear from './states/DailyClear';
 import { GAME_HEIGHT, GAME_WIDTH, refreshGameWidth } from './utils/Constants';
 import { GAME_STATE } from './utils/GameState';
+import './utils/posthog'; // initializes analytics (exception capture included)
 
 const gameConfig: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,

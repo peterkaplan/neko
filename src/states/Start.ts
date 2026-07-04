@@ -13,6 +13,7 @@ import { GAME_STATE } from '../utils/GameState';
 import { todayDateLabel } from '../utils/Daily';
 import { addSky, preloadSky } from '../utils/Sky';
 import { getEndlessBest } from '../utils/HighScores';
+import { posthog, distinctId } from '../utils/posthog';
 
 // Mini board for the How to Play demo
 const DEMO_TILE = 48;
@@ -117,6 +118,7 @@ class Start extends Phaser.Scene {
 
         this.addButton(centerX, 330, 'button_red', 'NORMAL', () => {
             GAME_STATE.difficulty = 'normal';
+            posthog.capture({ distinctId, event: 'difficulty selected', properties: { difficulty: 'normal' } });
             this.startGame('endless');
         }, overlay);
         const bestNormal = getEndlessBest('normal');
@@ -128,6 +130,7 @@ class Start extends Phaser.Scene {
 
         this.addButton(centerX, 440, 'button_dark', 'HARD', () => {
             GAME_STATE.difficulty = 'hard';
+            posthog.capture({ distinctId, event: 'difficulty selected', properties: { difficulty: 'hard' } });
             this.startGame('endless');
         }, overlay);
         const bestHard = getEndlessBest('hard');
@@ -145,6 +148,7 @@ class Start extends Phaser.Scene {
     }
 
     private showHowToPlay(): void {
+        posthog.capture({ distinctId, event: 'how to play viewed' });
         const overlay = this.makeOverlay();
         const centerX = GAME_WIDTH / 2;
 
@@ -303,6 +307,14 @@ class Start extends Phaser.Scene {
 
     startGame(mode: 'endless' | 'daily'): void {
         GAME_STATE.mode = mode;
+        posthog.capture({
+            distinctId,
+            event: 'game started',
+            properties: {
+                mode,
+                difficulty: mode === 'endless' ? GAME_STATE.difficulty : undefined,
+            },
+        });
         this.cameras.main.fadeOut(400, 0, 0, 0);
         this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
             this.scene.start('Play');

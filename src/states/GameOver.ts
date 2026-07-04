@@ -4,6 +4,7 @@ import { GAME_STATE } from '../utils/GameState';
 import { todayDateLabel } from '../utils/Daily';
 import { addSky } from '../utils/Sky';
 import { getEndlessBest, recordEndlessScore } from '../utils/HighScores';
+import { posthog, distinctId } from '../utils/posthog';
 
 class GameOver extends Phaser.Scene {
     constructor() {
@@ -42,8 +43,30 @@ class GameOver extends Phaser.Scene {
             color: '#93ab88',
         }).setOrigin(0.5);
 
+        posthog.capture({
+            distinctId,
+            event: 'game over',
+            properties: {
+                score: GAME_STATE.score,
+                level: GAME_STATE.currentLevel,
+                mode: GAME_STATE.mode,
+                difficulty: GAME_STATE.difficulty,
+            },
+        });
+
         if (GAME_STATE.mode === 'endless') {
             const isNewBest = recordEndlessScore(GAME_STATE.difficulty, GAME_STATE.score);
+            if (isNewBest) {
+                posthog.capture({
+                    distinctId,
+                    event: 'endless high score set',
+                    properties: {
+                        score: GAME_STATE.score,
+                        level: GAME_STATE.currentLevel,
+                        difficulty: GAME_STATE.difficulty,
+                    },
+                });
+            }
             const label = isNewBest ? 'NEW BEST!' : `BEST ${getEndlessBest(GAME_STATE.difficulty)}`;
             this.add.text(centerX, 375, label, {
                 fontFamily: 'PixelFont',
@@ -54,7 +77,14 @@ class GameOver extends Phaser.Scene {
             }).setOrigin(0.5);
         }
 
-        this.addButton(centerX, 440, 'button_red', 'RETRY', () => this.goTo('Play'));
+        this.addButton(centerX, 440, 'button_red', 'RETRY', () => {
+            posthog.capture({
+                distinctId,
+                event: 'game retried',
+                properties: { mode: GAME_STATE.mode, difficulty: GAME_STATE.difficulty, score: GAME_STATE.score },
+            });
+            this.goTo('Play');
+        });
         this.addButton(centerX, 510, 'button_dark', 'MENU', () => this.goTo('Start'));
     }
 

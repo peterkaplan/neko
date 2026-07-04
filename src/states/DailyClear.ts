@@ -3,6 +3,7 @@ import { GAME_HEIGHT, GAME_WIDTH } from '../utils/Constants';
 import { GAME_STATE } from '../utils/GameState';
 import { buildShareMessage, getDailyStats, todayDateLabel } from '../utils/Daily';
 import { addSky } from '../utils/Sky';
+import { posthog, distinctId } from '../utils/posthog';
 
 class DailyClear extends Phaser.Scene {
     private shareLabel?: Phaser.GameObjects.Text;
@@ -73,9 +74,11 @@ class DailyClear extends Phaser.Scene {
             const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
             if (isMobile && navigator.share) {
                 await navigator.share({ text: message });
+                posthog.capture({ distinctId, event: 'result shared', properties: { method: 'native_share', score: GAME_STATE.score } });
                 return;
             }
             await navigator.clipboard.writeText(message);
+            posthog.capture({ distinctId, event: 'result shared', properties: { method: 'clipboard', score: GAME_STATE.score } });
             this.shareLabel?.setText('COPIED!');
             this.time.delayedCall(1500, () => this.shareLabel?.setText('SHARE'));
         } catch {

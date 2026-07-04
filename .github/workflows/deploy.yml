@@ -26,6 +26,10 @@ jobs:
       - run: npm ci
       - run: npm run assets
       - run: npm run build
+        env:
+          # public client token, safe in the bundle by design
+          POSTHOG_API_KEY: phc_y2QLbwr42yLrg2hmvvYtuUvE3cvAbNEL6k7ccb8nVjsZ
+          POSTHOG_HOST: https://us.i.posthog.com
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

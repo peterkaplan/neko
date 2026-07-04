@@ -1,6 +1,7 @@
 import { Character } from "./Character";
 import { GAME_STATE } from "../utils/GameState";
-import { markTodayCompleted } from "../utils/Daily";
+import { getDailyStats, markTodayCompleted } from "../utils/Daily";
+import { posthog, distinctId } from '../utils/posthog';
 import { BoardInitializer } from "../utils/BoardInitializer";
 import { LevelManager } from "../utils/LevelManager";
 
@@ -57,6 +58,18 @@ export class GameBoard {
 
         GAME_STATE.lives -= 1;
 
+        posthog.capture({
+            distinctId,
+            event: 'player wall collision',
+            properties: {
+                score: GAME_STATE.score,
+                level: GAME_STATE.currentLevel,
+                mode: GAME_STATE.mode,
+                difficulty: GAME_STATE.difficulty,
+                lives_remaining: GAME_STATE.lives,
+            },
+        });
+
         // Reset the level after a small delay to give some feedback to the player
         this.scene.time.delayedCall(1000, () => { // delay for 1 second
             if (GAME_STATE.lives <= 0) {
@@ -90,11 +103,33 @@ export class GameBoard {
         if (GAME_STATE.mode === 'daily') {
             GAME_STATE.score += GAME_STATE.lives * 50; // reward surviving lives
             markTodayCompleted(GAME_STATE.score);
+            const stats = getDailyStats();
+            posthog.capture({
+                distinctId,
+                event: 'daily puzzle completed',
+                properties: {
+                    score: GAME_STATE.score,
+                    lives_remaining: GAME_STATE.lives,
+                    streak: stats.streak,
+                    total_completed: stats.completed,
+                },
+            });
             this.scene.time.delayedCall(1000, () => {
                 this.scene.scene.start('DailyClear');
             });
             return;
         }
+
+        posthog.capture({
+            distinctId,
+            event: 'level completed',
+            properties: {
+                score: GAME_STATE.score,
+                level: GAME_STATE.currentLevel,
+                difficulty: GAME_STATE.difficulty,
+                lives_remaining: GAME_STATE.lives,
+            },
+        });
 
         this.scene.time.delayedCall(1000, () => { // delay for 1 second
             GAME_STATE.currentLevel++;
