@@ -1,12 +1,24 @@
 // Logical canvas size — height is fixed and width matches the window's aspect
-// ratio at load, so Phaser's FIT scaling fills the screen edge-to-edge with no
+// ratio, so Phaser's FIT scaling fills the screen edge-to-edge with no
 // letterboxing. Layout anchors to the center and edges, so variable width is
 // safe; the aspect is clamped so ultrawide/portrait extremes stay reasonable.
 export const GAME_HEIGHT = 720;
-const aspect = typeof window !== 'undefined'
-    ? window.innerWidth / Math.max(1, window.innerHeight)
-    : 4 / 3;
-export const GAME_WIDTH = Math.round(GAME_HEIGHT * Math.min(2.4, Math.max(0.5, aspect)));
+
+function computeWidth(): number {
+    const aspect = typeof window !== 'undefined'
+        ? window.innerWidth / Math.max(1, window.innerHeight)
+        : 4 / 3;
+    return Math.round(GAME_HEIGHT * Math.min(2.4, Math.max(0.5, aspect)));
+}
+
+// `let` on purpose: importers see a live binding, and index.ts refreshes it
+// when the window is resized so layout code always reads the current width
+export let GAME_WIDTH = computeWidth();
+
+export function refreshGameWidth(): number {
+    GAME_WIDTH = computeWidth();
+    return GAME_WIDTH;
+}
 
 // Vertical bands reserved above/below the board
 export const HUD_TOP_HEIGHT = 130;

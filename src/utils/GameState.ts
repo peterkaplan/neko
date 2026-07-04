@@ -50,6 +50,9 @@ export interface GameState {
     // across resets like mode so Retry keeps the chosen difficulty.
     difficulty: 'normal' | 'hard';
     dailyConfig?: LevelConfig;
+    // Set before a resize-triggered Play restart so the run survives the
+    // re-layout: the current level is rebuilt but score/lives/level carry over
+    resumeSnapshot?: { score: number; lives: number; currentLevel: number };
 }
 
 export const GAME_STATE: GameState & { debug?: string[] } = {
@@ -75,6 +78,8 @@ export const GAME_STATE: GameState & { debug?: string[] } = {
 (globalThis as any).GAME_STATE = GAME_STATE;
 
 export function resetGameState(): void {
+    const resume = GAME_STATE.resumeSnapshot;
+    GAME_STATE.resumeSnapshot = undefined;
     GAME_STATE.regenBoard = false;
     GAME_STATE.currentLevel = 1;
     GAME_STATE.score = 0;
@@ -94,6 +99,11 @@ export function resetGameState(): void {
     GAME_STATE.levelConfigs = [];
     GAME_STATE.dailyConfig = undefined;
     // mode and difficulty are deliberately NOT reset: Retry/Play re-enter what was chosen on the Start scene
+    if (resume) {
+        GAME_STATE.score = resume.score;
+        GAME_STATE.lives = resume.lives;
+        GAME_STATE.currentLevel = resume.currentLevel;
+    }
 }
 
 export function getLevelConfig(): LevelConfig {
