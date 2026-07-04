@@ -5,12 +5,19 @@ class Boot extends Phaser.Scene {
         super({ key: 'Boot' });
     }
 
-    preload(): void {
-        // Load game assets
-    }
-
     create(): void {
-        this.scene.start('Start');  // After loading assets, start the Play state
+        // Canvas text drawn before the webfont finishes downloading silently
+        // falls back to a system font, so block on the font (with a timeout so
+        // a missing font can't wedge the game) before showing any text.
+        const start = () => this.scene.start('Start');
+        if (typeof document !== 'undefined' && document.fonts?.load) {
+            Promise.race([
+                document.fonts.load('16px PixelFont'),
+                new Promise(resolve => setTimeout(resolve, 2000)),
+            ]).then(start, start);
+        } else {
+            start();
+        }
     }
 }
 
