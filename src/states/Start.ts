@@ -188,7 +188,7 @@ class Start extends Phaser.Scene {
         const key = this.add.image(centerX, 460, 'key_right').setScale(2.2);
         overlay.add(key);
 
-        overlay.add(this.add.text(centerX, GAME_HEIGHT - 110, 'CLEAR EVERY JAR · NEW DAILY PUZZLE AT MIDNIGHT', {
+        overlay.add(this.add.text(centerX, GAME_HEIGHT - 110, 'NEKO SLIDES UNTIL SOMETHING STOPS HIM · NEW PUZZLE AT MIDNIGHT', {
             fontFamily: 'PixelFont',
             fontSize: '11px',
             color: '#93ab88',
@@ -225,7 +225,7 @@ class Start extends Phaser.Scene {
                 ease: 'Linear',
                 onComplete: () => {
                     if (!overlay.active) return;
-                    caption.setText('NEKO SLIDES UNTIL HE GRABS A JAR!');
+                    caption.setText('COLLECT EVERY JAR TO WIN!');
                     this.burst(overlay, cellX(4), midY);
                     this.tweens.add({ targets: jar, scale: 0, duration: 150 });
                     this.time.delayedCall(1400, () => {
