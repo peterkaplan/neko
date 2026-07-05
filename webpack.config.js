@@ -42,7 +42,7 @@ module.exports = (env, argv) => ({
             patterns: [
                 { from: 'index.css', to: 'index.css' },
                 { from: 'assets/images/logo.png', to: 'assets/images/logo.png' },
-                { from: 'assets/images/fish.png', to: 'assets/images/fish.png' },
+                { from: 'assets/generated/fish.svg', to: 'assets/generated/fish.svg' },
                 { from: 'assets/fonts', to: 'assets/fonts' },
             ],
         }),

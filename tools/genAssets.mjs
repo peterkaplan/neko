@@ -188,8 +188,26 @@ function drawMap(rows, palette, scale = 2) {
     return s;
 }
 
-// The fish collectible is hand-made art at assets/images/fish.png (not
-// generated) — it was produced from Peter's artwork with the background cut out
+// A cute goldfish as a crisp SVG so it stays sharp at any screen size —
+// round body, flowing tail, big eye, little smile
+function fishSvg() {
+    const O = '#6b3212';
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <path d="M42 32 Q56 12 61 18 Q58 27 48 32 Q58 37 61 46 Q56 52 42 36 Z" fill="#ef8a2e" stroke="${O}" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M15 22 Q21 5 34 16 Q24 13 17 23 Z" fill="#ef8a2e" stroke="${O}" stroke-width="2.5" stroke-linejoin="round"/>
+  <ellipse cx="26" cy="32" rx="18" ry="14" fill="#f7a13f" stroke="${O}" stroke-width="2.5"/>
+  <path d="M11 38 Q26 50 41 37 Q35 45.5 26 46 Q16 45.5 11 38 Z" fill="#ffd9a0"/>
+  <path d="M27 38 Q33 40 31 46 Q25 44 25 40 Z" fill="#ef8a2e" stroke="${O}" stroke-width="2" stroke-linejoin="round"/>
+  <circle cx="17" cy="30" r="5.4" fill="#ffffff" stroke="${O}" stroke-width="1.6"/>
+  <circle cx="16" cy="31" r="2.7" fill="#241226"/>
+  <circle cx="18.6" cy="28.4" r="1.3" fill="#ffffff"/>
+  <path d="M9 37.5 Q11.5 40 14 37.5" stroke="${O}" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <circle cx="11.5" cy="34.5" r="2" fill="#ff9d9d" opacity="0.55"/>
+</svg>
+`;
+    writeFileSync(join(OUT_DIR, 'fish.svg'), svg);
+    console.log('  fish.svg');
+}
 
 // ---------------------------------------------------------------- ui + fx
 
@@ -326,6 +344,7 @@ cloudSprite('cloud_a.png', 30, 7);
 cloudSprite('cloud_b.png', 20, 3);
 cloudSprite('cloud_c.png', 24, 12);
 wallTexture();
+fishSvg();
 heart();
 particle();
 keycap();

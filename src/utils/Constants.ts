@@ -8,7 +8,9 @@ function computeWidth(): number {
     const aspect = typeof window !== 'undefined'
         ? window.innerWidth / Math.max(1, window.innerHeight)
         : 4 / 3;
-    return Math.round(GAME_HEIGHT * Math.min(2.4, Math.max(0.5, aspect)));
+    // portrait floor is below modern phone aspects (390/844 ≈ 0.46) so the
+    // canvas fills tall screens with no letterbox bars
+    return Math.round(GAME_HEIGHT * Math.min(2.4, Math.max(0.42, aspect)));
 }
 
 // `let` on purpose: importers see a live binding, and index.ts refreshes it

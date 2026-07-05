@@ -12,8 +12,7 @@ export class Box {
         this.x = x;
         this.y = y;
 
-        // Create a sprite for the box using the box image from the assets
-        this.sprite = this.scene.physics.add.sprite(GET_X_FROM_INDEX(x), GET_Y_FROM_INDEX(y), 'box');
+        this.sprite = this.scene.physics.add.sprite(GET_X_FROM_INDEX(x), GET_Y_FROM_INDEX(y), 'fish');
 
         this.sprite.setOrigin(0);
         this.sprite.setDisplaySize(GET_TILE_SIZE() - 1, GET_TILE_SIZE() - 1);

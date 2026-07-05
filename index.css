@@ -8,7 +8,10 @@ body {
     text-align: center;
     margin: 0;
     padding: 0;
+    /* dvh tracks the real visible viewport on mobile — plain 100vh includes
+       the space behind Chrome's URL bar, which pushed the game down */
     height: 100vh;
+    height: 100dvh;
     overflow: hidden;
     /* matches the in-game sky so nothing flashes while the canvas boots */
     background: linear-gradient(#5aa9e2, #6cb5e9, #7cc0ee, #8ecdf4, #a5daf8);

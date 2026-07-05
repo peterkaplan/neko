@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
 import { GameBoard } from '../objects/GameBoard';
-import box from '../../assets/images/fish.png';
 import catIdleLeft from '../../assets/images/cat_left_idle.png';
 import catIdleRight from '../../assets/images/cat_right_idle.png';
 import catJumpLeft from '../../assets/images/cat_jump_left.png';
@@ -15,6 +14,7 @@ import heart from '../../assets/generated/heart.png';
 import buttonDark from '../../assets/generated/button_dark.png';
 import { addSky, preloadSky } from '../utils/Sky';
 import { recordEndlessScore } from '../utils/HighScores';
+import fishSvg from '../../assets/generated/fish.svg';
 import sfxJump from '../../assets/generated/sfx_jump.wav';
 import sfxCollect from '../../assets/generated/sfx_collect.wav';
 import sfxDeath from '../../assets/generated/sfx_death.wav';
@@ -48,7 +48,7 @@ class Play extends Phaser.Scene {
         this.wasd = this.input?.keyboard?.addKeys('W,A,S,D') as Play['wasd'];
         this.load.image('cat_idle_left', catIdleLeft);
         this.load.image('cat_idle_right', catIdleRight);
-        this.load.image('box', box);
+        if (!this.textures.exists('fish')) this.load.svg('fish', fishSvg, { width: 128, height: 128 });
         this.load.image('grass_a', grassA);
         this.load.image('grass_b', grassB);
         this.load.image('grass_c', grassC);
@@ -68,6 +68,8 @@ class Play extends Phaser.Scene {
 
     create(): void {
         resetGameState();
+        // The fish is a rasterized vector, not pixel art — scale it smoothly
+        this.textures.get('fish')?.setFilter(Phaser.Textures.FilterMode.LINEAR);
         this.cameras.main.fadeIn(500, 0, 0, 0);
         this.drawBackdrop();
         this.setupSwipeInput();
