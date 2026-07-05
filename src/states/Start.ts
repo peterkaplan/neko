@@ -25,12 +25,13 @@ interface DemoParts {
     step: Phaser.GameObjects.Text;
     caption: Phaser.GameObjects.Text;
     cat: Phaser.GameObjects.Image;
-    fish: Phaser.GameObjects.Image;
+    fishA: Phaser.GameObjects.Image;
+    fishB: Phaser.GameObjects.Image;
     hearts: Phaser.GameObjects.Image[];
     cellX: (col: number) => number;
-    midY: number;
+    rowY: (row: number) => number;
     tile: number;
-    pulse: () => void;
+    pulse: (dir: 'right' | 'up') => void;
 }
 
 class Start extends Phaser.Scene {
@@ -202,11 +203,15 @@ class Start extends Phaser.Scene {
         overlay.add(frame);
 
         const cellX = (col: number) => boardX + col * tile + tile / 2;
-        const midY = boardY + tile * 1.5;
+        const rowY = (row: number) => boardY + row * tile + tile / 2;
 
-        const fish = this.add.image(cellX(4), midY, 'title_fish').setScale(1.4 * (tile / DEMO_TILE));
-        const cat = this.add.image(cellX(0), midY, 'title_cat').setScale(0.19 * (tile / DEMO_TILE));
-        overlay.add(fish);
+        // Two fish so "catch every fish" is visibly true: one in the cat's
+        // path, one out of it (it survives the crash and wins the finale)
+        const fishA = this.add.image(cellX(4), rowY(1), 'title_fish').setScale(1.4 * (tile / DEMO_TILE));
+        const fishB = this.add.image(cellX(4), rowY(0), 'title_fish').setScale(1.4 * (tile / DEMO_TILE));
+        const cat = this.add.image(cellX(0), rowY(1), 'title_cat').setScale(0.19 * (tile / DEMO_TILE));
+        overlay.add(fishA);
+        overlay.add(fishB);
         overlay.add(cat);
 
         // The demo's lives, so "lose a heart" is something you can see happen
@@ -218,22 +223,28 @@ class Start extends Phaser.Scene {
         }
 
         // Input indicator: a pulsing arrow keycap on desktop, a finger-dot
-        // swiping right on touch screens
+        // swipe on touch screens; both follow the direction of the next move
         const indicatorY = boardY + DEMO_ROWS * tile + 84;
-        let pulse: () => void;
+        let pulse: (dir: 'right' | 'up') => void;
         if (isTouch) {
-            const dot = this.add.circle(centerX - 55, indicatorY, 9, 0xf4efe2).setAlpha(0);
+            const dot = this.add.circle(centerX, indicatorY, 9, 0xf4efe2).setAlpha(0);
             overlay.add(dot);
-            pulse = () => {
+            pulse = (dir) => {
                 if (!overlay.active) return;
-                dot.setPosition(centerX - 55, indicatorY).setAlpha(1);
-                this.tweens.add({ targets: dot, x: centerX + 55, alpha: 0.15, duration: 550, ease: 'Sine.easeOut' });
+                if (dir === 'right') {
+                    dot.setPosition(centerX - 55, indicatorY).setAlpha(1);
+                    this.tweens.add({ targets: dot, x: centerX + 55, alpha: 0.15, duration: 550, ease: 'Sine.easeOut' });
+                } else {
+                    dot.setPosition(centerX, indicatorY + 30).setAlpha(1);
+                    this.tweens.add({ targets: dot, y: indicatorY - 30, alpha: 0.15, duration: 550, ease: 'Sine.easeOut' });
+                }
             };
         } else {
             const key = this.add.image(centerX, indicatorY, 'key_right').setScale(2.2);
             overlay.add(key);
-            pulse = () => {
+            pulse = (dir) => {
                 if (!overlay.active) return;
+                key.setRotation(dir === 'up' ? -Math.PI / 2 : 0);
                 this.tweens.add({ targets: key, scale: 1.7, duration: 110, yoyo: true });
             };
         }
@@ -251,19 +262,22 @@ class Start extends Phaser.Scene {
             color: '#93ab88',
         }).setOrigin(0.5));
 
-        this.runDemo(overlay, { step, caption, cat, fish, hearts, cellX, midY, tile, pulse });
+        this.runDemo(overlay, { step, caption, cat, fishA, fishB, hearts, cellX, rowY, tile, pulse });
     }
 
     // One slow, spelled-out loop: how to move, that the cat slides, that fish
-    // stop him and win the game, that walls crash and cost a heart. Every
-    // async hop checks the overlay is still alive so closing it stops the show.
+    // stop him, that walls crash and cost a heart — then he recovers and
+    // catches the last fish to clear the level. Every async hop checks the
+    // overlay is still alive so closing it stops the show.
     private runDemo(overlay: Phaser.GameObjects.Container, parts: DemoParts): void {
         if (!overlay.active) return;
-        const { step, caption, cat, fish, hearts, cellX, midY, tile, pulse } = parts;
+        const { step, caption, cat, fishA, fishB, hearts, cellX, rowY, tile, pulse } = parts;
+        const fishScale = 1.4 * (tile / DEMO_TILE);
 
         // reset for this loop
-        cat.setPosition(cellX(0), midY).setAlpha(1);
-        fish.setScale(1.4 * (tile / DEMO_TILE)).setAlpha(1);
+        cat.setPosition(cellX(0), rowY(1)).setAlpha(1);
+        fishA.setPosition(cellX(4), rowY(1)).setScale(fishScale);
+        fishB.setPosition(cellX(4), rowY(0)).setScale(fishScale);
         hearts.forEach(h => h.setAlpha(1));
 
         const at = (ms: number, fn: () => void) => this.time.delayedCall(ms, () => {
@@ -274,46 +288,57 @@ class Start extends Phaser.Scene {
         caption.setText(navigator.maxTouchPoints > 0
             ? 'SWIPE YOUR FINGER IN ANY DIRECTION\nTO MOVE NEKO THE CAT'
             : 'PRESS AN ARROW KEY\nTO MOVE NEKO THE CAT');
-        at(700, pulse);
-        at(1800, pulse);
+        at(700, () => pulse('right'));
+        at(1800, () => pulse('right'));
 
         at(3000, () => {
             step.setText('STEP 2 OF 4');
             caption.setText('NEKO SLIDES ALL THE WAY —\nHE ONLY STOPS WHEN HE HITS SOMETHING');
         });
         at(3900, () => {
-            pulse();
+            pulse('right');
             this.tweens.add({ targets: cat, x: cellX(4), duration: 900, ease: 'Linear' });
         });
         at(4800, () => {
             step.setText('STEP 3 OF 4');
             caption.setText('HE CAUGHT A FISH! FISH STOP HIM.\nCATCH EVERY FISH TO WIN THE LEVEL');
-            this.burst(overlay, cellX(4), midY);
-            this.tweens.add({ targets: fish, scale: 0, duration: 150 });
+            this.burst(overlay, cellX(4), rowY(1));
+            this.tweens.add({ targets: fishA, scale: 0, duration: 150 });
         });
 
         at(8300, () => {
             step.setText('STEP 4 OF 4');
-            caption.setText('BUT BE CAREFUL! IF NO FISH IS AHEAD,\nNEKO CRASHES INTO THE WALL...');
+            caption.setText('BUT BE CAREFUL! NO FISH THAT WAY?\nNEKO CRASHES INTO THE WALL...');
         });
         at(9700, () => {
-            pulse();
+            pulse('right');
             this.tweens.add({ targets: cat, x: cellX(6) + tile / 2 - 10, duration: 350, ease: 'Linear' });
         });
         at(10050, () => {
             cat.setAlpha(0);
-            this.burst(overlay, cellX(6) + tile / 2, midY, 0xff7d6a);
+            this.burst(overlay, cellX(6) + tile / 2, rowY(1), 0xff7d6a);
             hearts[2].setAlpha(0.2);
         });
         at(10700, () => {
             caption.setText('A CRASH COSTS ONE HEART.\nLOSE ALL 3 HEARTS = GAME OVER');
         });
 
-        at(14000, () => {
+        // finale: recover and catch the remaining fish to clear the level
+        at(13800, () => {
             step.setText('');
-            caption.setText("THAT'S EVERYTHING! CATCH THE FISH,\nDODGE THE WALLS. GOOD LUCK!");
+            caption.setText('ONE FISH LEFT — GO GET IT!');
+            cat.setPosition(cellX(4), rowY(1)).setAlpha(1);
         });
-        at(16800, () => this.runDemo(overlay, parts));
+        at(15000, () => {
+            pulse('up');
+            this.tweens.add({ targets: cat, y: rowY(0), duration: 350, ease: 'Linear' });
+        });
+        at(15400, () => {
+            this.burst(overlay, cellX(4), rowY(0));
+            this.tweens.add({ targets: fishB, scale: 0, duration: 150 });
+            caption.setText('ALL FISH CAUGHT — LEVEL CLEAR!\nGOOD LUCK OUT THERE');
+        });
+        at(19000, () => this.runDemo(overlay, parts));
     }
 
     private burst(overlay: Phaser.GameObjects.Container, x: number, y: number, tint?: number): void {
