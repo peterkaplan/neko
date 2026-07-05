@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { GameBoard } from '../objects/GameBoard';
-import box from '../../assets/generated/fish.png';
+import box from '../../assets/images/fish.png';
 import catIdleLeft from '../../assets/images/cat_left_idle.png';
 import catIdleRight from '../../assets/images/cat_right_idle.png';
 import catJumpLeft from '../../assets/images/cat_jump_left.png';

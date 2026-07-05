@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import buttonDark from '../../assets/generated/button_dark.png';
 import buttonRed from '../../assets/generated/button_red.png';
 import catIdle from '../../assets/images/cat_right_idle.png';
-import fishImg from '../../assets/generated/fish.png';
+import fishImg from '../../assets/images/fish.png';
 import logo from '../../assets/images/logo.png';
 import grassA from '../../assets/generated/grass_a.png';
 import grassB from '../../assets/generated/grass_b.png';
@@ -65,7 +65,7 @@ class Start extends Phaser.Scene {
 
         const cat = this.add.image(centerX - 55, 360, 'title_cat');
         cat.setScale(0.85);
-        this.add.image(centerX + 90, 390, 'title_fish').setScale(3.5);
+        this.add.image(centerX + 90, 390, 'title_fish').setScale(1.75);
 
         // Gentle idle bob so the title screen feels alive
         this.tweens.add({
@@ -207,8 +207,8 @@ class Start extends Phaser.Scene {
 
         // Two fish so "catch every fish" is visibly true: one in the cat's
         // path, one out of it (it survives the crash and wins the finale)
-        const fishA = this.add.image(cellX(4), rowY(1), 'title_fish').setScale(1.4 * (tile / DEMO_TILE));
-        const fishB = this.add.image(cellX(4), rowY(0), 'title_fish').setScale(1.4 * (tile / DEMO_TILE));
+        const fishA = this.add.image(cellX(4), rowY(1), 'title_fish').setScale(0.7 * (tile / DEMO_TILE));
+        const fishB = this.add.image(cellX(4), rowY(0), 'title_fish').setScale(0.7 * (tile / DEMO_TILE));
         const cat = this.add.image(cellX(0), rowY(1), 'title_cat').setScale(0.19 * (tile / DEMO_TILE));
         overlay.add(fishA);
         overlay.add(fishB);
@@ -272,7 +272,7 @@ class Start extends Phaser.Scene {
     private runDemo(overlay: Phaser.GameObjects.Container, parts: DemoParts): void {
         if (!overlay.active) return;
         const { step, caption, cat, fishA, fishB, hearts, cellX, rowY, tile, pulse } = parts;
-        const fishScale = 1.4 * (tile / DEMO_TILE);
+        const fishScale = 0.7 * (tile / DEMO_TILE);
 
         // reset for this loop
         cat.setPosition(cellX(0), rowY(1)).setAlpha(1);

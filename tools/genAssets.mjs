@@ -188,48 +188,8 @@ function drawMap(rows, palette, scale = 2) {
     return s;
 }
 
-// A goldfish facing left, drawn geometrically (ellipse body, bowtie tail,
-// computed 1px outline) so the silhouette stays crisp at board size
-function fish() {
-    const SIZE = 32;
-    const mask = Array.from({ length: SIZE }, () => new Array(SIZE).fill(false));
-    const inEllipse = (x, y, cx, cy, rx, ry) => ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1;
-    for (let y = 0; y < SIZE; y++) {
-        for (let x = 0; x < SIZE; x++) {
-            const body = inEllipse(x, y, 12, 17, 9.5, 6.5);
-            // tail: triangle widening to the right with a V notch cut into it
-            const spread = (x - 19) * 0.75 + 1;
-            const notch = (x - 24) * 1.2;
-            const tail = x >= 19 && x <= 27 && Math.abs(y - 17) <= spread && Math.abs(y - 17) >= Math.max(0, notch);
-            if (body || tail) mask[y][x] = true;
-        }
-    }
-    const s = new Sprite(SIZE, SIZE);
-    const BODY = hex('#f59a3e');
-    const DARK = hex('#d9772a');
-    const BELLY = hex('#ffd9a0');
-    for (let y = 0; y < SIZE; y++) {
-        for (let x = 0; x < SIZE; x++) {
-            if (!mask[y][x]) continue;
-            let color = BODY;
-            if (x >= 20) color = DARK;             // tail
-            else if (y >= 20 && x < 16) color = BELLY; // belly
-            s.set(x, y, color);
-        }
-    }
-    // crisp 1px outline all around the silhouette
-    const OUT = hex('#79380f');
-    for (let y = 0; y < SIZE; y++) {
-        for (let x = 0; x < SIZE; x++) {
-            if (mask[y][x]) continue;
-            if (mask[y - 1]?.[x] || mask[y + 1]?.[x] || mask[y][x - 1] || mask[y][x + 1]) s.set(x, y, OUT);
-        }
-    }
-    // big friendly eye near the nose
-    s.fill(6, 13, 3, 3, hex('#ffffff'));
-    s.fill(6, 14, 2, 2, hex('#2e1a0c'));
-    s.save('fish.png');
-}
+// The fish collectible is hand-made art at assets/images/fish.png (not
+// generated) — it was produced from Peter's artwork with the background cut out
 
 // ---------------------------------------------------------------- ui + fx
 
@@ -366,7 +326,6 @@ cloudSprite('cloud_a.png', 30, 7);
 cloudSprite('cloud_b.png', 20, 3);
 cloudSprite('cloud_c.png', 24, 12);
 wallTexture();
-fish();
 heart();
 particle();
 keycap();
