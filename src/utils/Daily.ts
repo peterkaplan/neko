@@ -69,7 +69,7 @@ export function buildShareMessage(score: number): string {
     const date = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric' });
     return [
         `🐱 Neko Daily · ${date}`,
-        `🍯 Score: ${score}`,
+        `🐟 Score: ${score}`,
         `🔥 Streak: ${stats.streak} · Solved: ${stats.completed}`,
         'https://peterkaplan.github.io/neko/',
     ].join('\n');

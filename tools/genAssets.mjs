@@ -188,39 +188,39 @@ function drawMap(rows, palette, scale = 2) {
     return s;
 }
 
-const HONEY_JAR_ROWS = [
-    '......KKKK......',
-    '.....KKKKKK.....',
-    '.....kkkkkk.....',
-    '....OOOOOOOO....',
-    '...OHHHHHHHHO...',
-    '..OHHHHHHHHHHO..',
-    '..OHHAHHAHHAHO..',
-    '.OAAHAAHAAHAAAO.',
-    '.OASSAAAAAAAAaO.',
-    '.OSSAAEAAAEAAaO.',
-    '.OASAAEAAAEAAaO.',
-    '.OAAAAAMMAAAAaO.',
-    '.OAAAAAAAAAAaaO.',
-    '..OAAAAAAAAaaO..',
-    '...OOOOOOOOOO...',
+// A goldfish facing left: dorsal fin on top, notched two-lobe tail on the
+// right, and the same cute face the honey jar had
+const FISH_ROWS = [
+    '................',
+    '.....OOO........',
+    '....ODDDO.......',
+    '...OOBBBOOO.....',
+    '..OBEWBBBBBO....',
+    '.OBEEBBBBBBBDDDO',
+    '.OBBBBBBBBBBDDO.',
+    '.OBSBBBBBBBBDDO.',
+    '.OBBSSBBBBBBDDDO',
+    '..OLLBBBBBBO....',
+    '...OLLLLLOO.....',
+    '....OOOOO.......',
+    '................',
+    '................',
+    '................',
     '................',
 ];
 
-const HONEY_JAR_PALETTE = {
-    K: hex('#c98d4b'), // cork
-    k: hex('#a06a2f'),
-    O: hex('#6b3b10'), // outline
-    H: hex('#ffd873'), // honey dripping over the rim
-    A: hex('#f0a135'), // amber body
-    a: hex('#c77e22'), // body shading
-    S: hex('#ffe9b0'), // shine
-    E: hex('#3a2410'), // eyes
-    M: hex('#3a2410'), // smile
+const FISH_PALETTE = {
+    O: hex('#5a2d12'), // outline
+    B: hex('#f2913d'), // orange body
+    L: hex('#ffd9a0'), // pale belly
+    D: hex('#d06f22'), // fins and tail
+    E: hex('#2e1a0c'), // eye
+    W: hex('#ffffff'), // eye shine
+    S: hex('#2e1a0c'), // smile
 };
 
-function honeyJar() {
-    drawMap(HONEY_JAR_ROWS, HONEY_JAR_PALETTE, 2).save('honey_jar.png');
+function fish() {
+    drawMap(FISH_ROWS, FISH_PALETTE, 2).save('fish.png');
 }
 
 // ---------------------------------------------------------------- ui + fx
@@ -358,7 +358,7 @@ cloudSprite('cloud_a.png', 30, 7);
 cloudSprite('cloud_b.png', 20, 3);
 cloudSprite('cloud_c.png', 24, 12);
 wallTexture();
-honeyJar();
+fish();
 heart();
 particle();
 keycap();

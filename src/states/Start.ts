@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import buttonDark from '../../assets/generated/button_dark.png';
 import buttonRed from '../../assets/generated/button_red.png';
 import catIdle from '../../assets/images/cat_right_idle.png';
-import honey from '../../assets/generated/honey_jar.png';
+import fishImg from '../../assets/generated/fish.png';
 import logo from '../../assets/images/logo.png';
 import grassA from '../../assets/generated/grass_a.png';
 import grassB from '../../assets/generated/grass_b.png';
@@ -43,7 +43,7 @@ class Start extends Phaser.Scene {
         if (!this.textures.exists('grass_b')) this.load.image('grass_b', grassB);
         if (!this.textures.exists('particle')) this.load.image('particle', particleImg);
         this.load.image('title_cat', catIdle);
-        this.load.image('title_honey', honey);
+        this.load.image('title_fish', fishImg);
         this.load.image('logo', logo);
         this.load.image('key_right', keyRight);
     }
@@ -60,7 +60,7 @@ class Start extends Phaser.Scene {
 
         const cat = this.add.image(centerX - 55, 360, 'title_cat');
         cat.setScale(0.85);
-        this.add.image(centerX + 90, 390, 'title_honey').setScale(3.5);
+        this.add.image(centerX + 90, 390, 'title_fish').setScale(3.5);
 
         // Gentle idle bob so the title screen feels alive
         this.tweens.add({
@@ -134,7 +134,7 @@ class Start extends Phaser.Scene {
             this.startGame('endless');
         }, overlay);
         const bestHard = getEndlessBest('hard');
-        overlay.add(this.add.text(centerX, 482, bestHard > 0 ? `BIGGER BOARDS, MORE JARS · BEST ${bestHard}` : 'BIGGER BOARDS, MORE JARS', {
+        overlay.add(this.add.text(centerX, 482, bestHard > 0 ? `BIGGER BOARDS, MORE FISH · BEST ${bestHard}` : 'BIGGER BOARDS, MORE FISH', {
             fontFamily: 'PixelFont',
             fontSize: '10px',
             color: '#93ab88',
@@ -191,7 +191,7 @@ class Start extends Phaser.Scene {
         const cellX = (col: number) => boardX + col * tile + tile / 2;
         const midY = boardY + tile * 1.5;
 
-        const jar = this.add.image(cellX(4), midY, 'title_honey').setScale(1.4 * (tile / DEMO_TILE));
+        const jar = this.add.image(cellX(4), midY, 'title_fish').setScale(1.4 * (tile / DEMO_TILE));
         const cat = this.add.image(cellX(0), midY, 'title_cat').setScale(0.19 * (tile / DEMO_TILE));
         overlay.add(jar);
         overlay.add(cat);
@@ -239,7 +239,7 @@ class Start extends Phaser.Scene {
                 ease: 'Linear',
                 onComplete: () => {
                     if (!overlay.active) return;
-                    caption.setText('COLLECT EVERY JAR TO WIN!');
+                    caption.setText('COLLECT EVERY FISH TO WIN!');
                     this.burst(overlay, cellX(4), midY);
                     this.tweens.add({ targets: jar, scale: 0, duration: 150 });
                     this.time.delayedCall(1400, () => {
