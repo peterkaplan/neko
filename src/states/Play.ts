@@ -20,6 +20,7 @@ import sfxCollect from '../../assets/generated/sfx_collect.wav';
 import sfxDeath from '../../assets/generated/sfx_death.wav';
 import sfxClear from '../../assets/generated/sfx_clear.wav';
 import { GAME_STATE, resetGameState } from '../utils/GameState';
+import { markTodayPlayed } from '../utils/Daily';
 import { LevelManager } from '../utils/LevelManager';
 import BoardInitializer from '../utils/BoardInitializer';
 import Scoreboard from '../utils/Scoreboard';
@@ -68,6 +69,7 @@ class Play extends Phaser.Scene {
 
     create(): void {
         resetGameState();
+        if (GAME_STATE.mode === 'daily') markTodayPlayed();
         this.cameras.main.fadeIn(500, 0, 0, 0);
         this.drawBackdrop();
         this.setupSwipeInput();

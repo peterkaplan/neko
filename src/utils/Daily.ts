@@ -32,18 +32,47 @@ export interface DailyStats {
     completed: number;
     streak: number;
     lastDay: number;
+    maxStreak: number;
+    played: number;         // distinct days the daily was attempted
+    lastPlayedDay: number;  // so one day only counts once
+    hearts: number[];       // index 0..2: solved with 1..3 hearts remaining
 }
 
 const STATS_KEY = 'neko-daily-stats';
 
+const EMPTY_STATS: DailyStats = {
+    completed: 0, streak: 0, lastDay: -1,
+    maxStreak: 0, played: 0, lastPlayedDay: -1, hearts: [0, 0, 0],
+};
+
 export function getDailyStats(): DailyStats {
     try {
         const raw = localStorage.getItem(STATS_KEY);
-        if (raw) return JSON.parse(raw);
+        if (raw) {
+            const stats: DailyStats = { ...EMPTY_STATS, ...JSON.parse(raw) };
+            // older saves predate these fields — backfill sensibly
+            stats.maxStreak = Math.max(stats.maxStreak, stats.streak);
+            stats.played = Math.max(stats.played, stats.completed);
+            return stats;
+        }
     } catch {
         // storage unavailable — treat as a fresh player
     }
-    return { completed: 0, streak: 0, lastDay: -1 };
+    return { ...EMPTY_STATS, hearts: [0, 0, 0] };
+}
+
+// Counts the attempt the first time the daily is started each day
+export function markTodayPlayed(): void {
+    try {
+        const stats = getDailyStats();
+        const today = todayNumber();
+        if (stats.lastPlayedDay === today) return;
+        stats.played += 1;
+        stats.lastPlayedDay = today;
+        localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+    } catch {
+        // storage unavailable
+    }
 }
 
 export function markTodayCompleted(score: number, lives: number): void {
@@ -56,6 +85,8 @@ export function markTodayCompleted(score: number, lives: number): void {
             stats.completed += 1;
             stats.streak = stats.lastDay === today - 1 ? stats.streak + 1 : 1;
             stats.lastDay = today;
+            stats.maxStreak = Math.max(stats.maxStreak, stats.streak);
+            stats.hearts[Math.min(2, Math.max(0, lives - 1))] += 1;
             localStorage.setItem(STATS_KEY, JSON.stringify(stats));
         }
         localStorage.setItem(storageKey(), JSON.stringify({ score, lives }));

@@ -12,7 +12,7 @@ import heartImg from '../../assets/generated/heart.png';
 import trophyImg from '../../assets/generated/trophy.png';
 import { GAME_HEIGHT, GAME_WIDTH, textResolution } from '../utils/Constants';
 import { GAME_STATE } from '../utils/GameState';
-import { getDailyStats, todayDateLabel } from '../utils/Daily';
+import { getDailyStats, getTodayResult, isTodayCompleted, todayDateLabel } from '../utils/Daily';
 import { addSky, preloadSky } from '../utils/Sky';
 import { getEndlessBest } from '../utils/HighScores';
 import { posthog, distinctId } from '../utils/posthog';
@@ -118,37 +118,94 @@ class Start extends Phaser.Scene {
         const centerX = GAME_WIDTH / 2;
         const stats = getDailyStats();
 
-        overlay.add(this.add.image(centerX, 120, 'trophy').setScale(3));
-        overlay.add(this.add.text(centerX, 185, 'STATS', {
+        overlay.add(this.add.image(centerX, 92, 'trophy').setScale(2.5));
+        overlay.add(this.add.text(centerX, 148, 'STATS', {
             fontFamily: 'PixelFont',
             resolution: textResolution(),
-            fontSize: '26px',
+            fontSize: '24px',
             color: '#f2d032',
             stroke: '#0c100a',
             strokeThickness: 6,
         }).setOrigin(0.5));
 
-        const header = (y: number, label: string) => overlay.add(this.add.text(centerX, y, label, {
+        // Wordle-style big-number tiles
+        const winPct = stats.played > 0 ? Math.round((stats.completed / stats.played) * 100) : 0;
+        const tiles: [string, string][] = [
+            [String(stats.played), 'PLAYED'],
+            [`${winPct}`, 'WIN %'],
+            [String(stats.streak), 'STREAK'],
+            [String(stats.maxStreak), 'MAX\nSTREAK'],
+        ];
+        const spread = Math.min(GAME_WIDTH - 60, 460);
+        tiles.forEach(([num, label], i) => {
+            const x = centerX + spread * ((i - 1.5) / 4);
+            overlay.add(this.add.text(x, 225, num, {
+                fontFamily: 'PixelFont',
+                resolution: textResolution(),
+                fontSize: '26px',
+                color: '#f4efe2',
+                stroke: '#0c100a',
+                strokeThickness: 5,
+            }).setOrigin(0.5));
+            overlay.add(this.add.text(x, 265, label, {
+                fontFamily: 'PixelFont',
+                resolution: textResolution(),
+                fontSize: '8px',
+                color: '#93ab88',
+                align: 'center',
+                lineSpacing: 4,
+            }).setOrigin(0.5, 0));
+        });
+
+        // Distribution: dailies solved by hearts remaining, today's row lit up
+        overlay.add(this.add.text(centerX, 330, 'SOLVED WITH HEARTS LEFT', {
             fontFamily: 'PixelFont',
             resolution: textResolution(),
-            fontSize: '12px',
+            fontSize: '11px',
             color: '#f2d032',
         }).setOrigin(0.5));
-        const value = (y: number, label: string) => overlay.add(this.add.text(centerX, y, label, {
+
+        const maxCount = Math.max(1, ...stats.hearts);
+        const todayLives = isTodayCompleted() ? getTodayResult()?.lives ?? 0 : 0;
+        const heartsX = centerX - Math.min(GAME_WIDTH / 2 - 20, 170);
+        const barX = heartsX + 3 * 24 + 10;
+        const barMax = Math.min(230, GAME_WIDTH - (barX - (centerX - GAME_WIDTH / 2)) - 60);
+        [3, 2, 1].forEach((livesCount, row) => {
+            const y = 372 + row * 40;
+            for (let h = 0; h < 3; h++) {
+                overlay.add(this.add.image(heartsX + h * 24, y, 'heart')
+                    .setScale(1.8)
+                    .setAlpha(h < livesCount ? 1 : 0.18));
+            }
+            const count = stats.hearts[livesCount - 1] ?? 0;
+            const highlight = todayLives === livesCount;
+            const barW = Math.max(20, (count / maxCount) * barMax);
+            overlay.add(this.add.rectangle(barX, y, barW, 24, highlight ? 0xf2d032 : 0x4c5c46).setOrigin(0, 0.5));
+            overlay.add(this.add.text(barX + barW - 7, y, String(count), {
+                fontFamily: 'PixelFont',
+                resolution: textResolution(),
+                fontSize: '11px',
+                color: highlight ? '#0c100a' : '#f4efe2',
+            }).setOrigin(1, 0.5));
+        });
+
+        // Endless bests
+        overlay.add(this.add.text(centerX, 530, 'ENDLESS BEST', {
             fontFamily: 'PixelFont',
             resolution: textResolution(),
-            fontSize: '16px',
+            fontSize: '11px',
+            color: '#f2d032',
+        }).setOrigin(0.5));
+        overlay.add(this.add.text(centerX, 568, `NORMAL ${getEndlessBest('normal')} · HARD ${getEndlessBest('hard')}`, {
+            fontFamily: 'PixelFont',
+            resolution: textResolution(),
+            fontSize: '14px',
             color: '#f4efe2',
             stroke: '#0c100a',
             strokeThickness: 4,
+            align: 'center',
+            wordWrap: { width: GAME_WIDTH - 32 },
         }).setOrigin(0.5));
-
-        header(265, 'DAILY PUZZLES');
-        value(302, `SOLVED ${stats.completed} · STREAK ${stats.streak}`);
-
-        header(385, 'ENDLESS BEST');
-        value(422, `NORMAL ${getEndlessBest('normal')}`);
-        value(460, `HARD ${getEndlessBest('hard')}`);
 
         overlay.add(this.add.text(centerX, GAME_HEIGHT - 60, 'TAP ANYWHERE TO CLOSE', {
             fontFamily: 'PixelFont',
