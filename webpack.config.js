@@ -43,6 +43,7 @@ module.exports = (env, argv) => ({
                 { from: 'index.css', to: 'index.css' },
                 { from: 'assets/images/logo.png', to: 'assets/images/logo.png' },
                 { from: 'assets/generated/fish.svg', to: 'assets/generated/fish.svg' },
+                { from: 'assets/generated/icon.png', to: 'assets/generated/icon.png' },
                 { from: 'assets/fonts', to: 'assets/fonts' },
             ],
         }),

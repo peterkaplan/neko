@@ -15,6 +15,7 @@ import { GAME_STATE } from '../utils/GameState';
 import { getDailyStats, getTodayResult, isTodayCompleted, todayDateLabel } from '../utils/Daily';
 import { addSky, preloadSky } from '../utils/Sky';
 import { getEndlessBest } from '../utils/HighScores';
+import { renderDailyStats } from '../utils/StatsPanel';
 import { posthog, distinctId } from '../utils/posthog';
 
 // Mini board for the How to Play demo
@@ -128,66 +129,7 @@ class Start extends Phaser.Scene {
             strokeThickness: 6,
         }).setOrigin(0.5));
 
-        // Wordle-style big-number tiles
-        const winPct = stats.played > 0 ? Math.round((stats.completed / stats.played) * 100) : 0;
-        const tiles: [string, string][] = [
-            [String(stats.played), 'PLAYED'],
-            [`${winPct}`, 'WIN %'],
-            [String(stats.streak), 'STREAK'],
-            [String(stats.maxStreak), 'MAX\nSTREAK'],
-        ];
-        const spread = Math.min(GAME_WIDTH - 60, 460);
-        tiles.forEach(([num, label], i) => {
-            const x = centerX + spread * ((i - 1.5) / 4);
-            overlay.add(this.add.text(x, 225, num, {
-                fontFamily: 'PixelFont',
-                resolution: textResolution(),
-                fontSize: '26px',
-                color: '#f4efe2',
-                stroke: '#0c100a',
-                strokeThickness: 5,
-            }).setOrigin(0.5));
-            overlay.add(this.add.text(x, 265, label, {
-                fontFamily: 'PixelFont',
-                resolution: textResolution(),
-                fontSize: '8px',
-                color: '#93ab88',
-                align: 'center',
-                lineSpacing: 4,
-            }).setOrigin(0.5, 0));
-        });
-
-        // Distribution: dailies solved by hearts remaining, today's row lit up
-        overlay.add(this.add.text(centerX, 330, 'SOLVED WITH HEARTS LEFT', {
-            fontFamily: 'PixelFont',
-            resolution: textResolution(),
-            fontSize: '11px',
-            color: '#f2d032',
-        }).setOrigin(0.5));
-
-        const maxCount = Math.max(1, ...stats.hearts);
-        const todayLives = isTodayCompleted() ? getTodayResult()?.lives ?? 0 : 0;
-        const heartsX = centerX - Math.min(GAME_WIDTH / 2 - 20, 170);
-        const barX = heartsX + 3 * 24 + 10;
-        const barMax = Math.min(230, GAME_WIDTH - (barX - (centerX - GAME_WIDTH / 2)) - 60);
-        [3, 2, 1].forEach((livesCount, row) => {
-            const y = 372 + row * 40;
-            for (let h = 0; h < 3; h++) {
-                overlay.add(this.add.image(heartsX + h * 24, y, 'heart')
-                    .setScale(1.8)
-                    .setAlpha(h < livesCount ? 1 : 0.18));
-            }
-            const count = stats.hearts[livesCount - 1] ?? 0;
-            const highlight = todayLives === livesCount;
-            const barW = Math.max(20, (count / maxCount) * barMax);
-            overlay.add(this.add.rectangle(barX, y, barW, 24, highlight ? 0xf2d032 : 0x4c5c46).setOrigin(0, 0.5));
-            overlay.add(this.add.text(barX + barW - 7, y, String(count), {
-                fontFamily: 'PixelFont',
-                resolution: textResolution(),
-                fontSize: '11px',
-                color: highlight ? '#0c100a' : '#f4efe2',
-            }).setOrigin(1, 0.5));
-        });
+        renderDailyStats(this, go => overlay.add(go), 225);
 
         // Endless bests
         overlay.add(this.add.text(centerX, 530, 'ENDLESS BEST', {

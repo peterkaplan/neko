@@ -188,10 +188,10 @@ function drawMap(rows, palette, scale = 2) {
     return s;
 }
 
-// A pixel-art goldfish emitted as a crisp-edged SVG: the pixel grid is
-// computed (ellipse body, bowtie tail, outline pass) and each run of pixels
-// becomes a rect, so it keeps the chunky look but scales sharply on any screen
-function fishSvg() {
+// A pixel-art goldfish: the pixel grid is computed (ellipse body, bowtie
+// tail, outline pass) and emitted two ways — a crisp-edged SVG for in-game
+// use, and a PNG app icon for link previews / home screens
+function buildFishGrid() {
     const SIZE = 32;
     const mask = Array.from({ length: SIZE }, () => new Array(SIZE).fill(false));
     const inEllipse = (x, y, cx, cy, rx, ry) => ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1;
@@ -235,7 +235,12 @@ function fishSvg() {
     grid[21][6] = INK;
     grid[21][7] = INK;
     grid[20][8] = INK;
+    return grid;
+}
 
+function fishSvg() {
+    const SIZE = 32;
+    const grid = buildFishGrid();
     // emit each horizontal run of same-colored pixels as one rect
     const rects = [];
     for (let y = 0; y < SIZE; y++) {
@@ -252,6 +257,20 @@ function fishSvg() {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${SIZE} ${SIZE}" shape-rendering="crispEdges">\n${rects.join('\n')}\n</svg>\n`;
     writeFileSync(join(OUT_DIR, 'fish.svg'), svg);
     console.log('  fish.svg (pixel, ' + rects.length + ' rects)');
+}
+
+// 180x180 PNG icon (fish on sky) for apple-touch-icon and og:image —
+// link previews don't understand SVG favicons
+function appIcon() {
+    const grid = buildFishGrid();
+    const s = new Sprite(180, 180);
+    s.fill(0, 0, 180, 180, hex('#7cc0ee'));
+    for (let y = 0; y < 32; y++) {
+        for (let x = 0; x < 32; x++) {
+            if (grid[y][x]) s.fill(10 + x * 5, 10 + y * 5, 5, 5, hex(grid[y][x]));
+        }
+    }
+    s.save('icon.png');
 }
 
 // ---------------------------------------------------------------- ui + fx
@@ -418,6 +437,7 @@ cloudSprite('cloud_b.png', 20, 3);
 cloudSprite('cloud_c.png', 24, 12);
 wallTexture();
 fishSvg();
+appIcon();
 trophy();
 heart();
 particle();

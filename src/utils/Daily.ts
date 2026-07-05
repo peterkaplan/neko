@@ -109,7 +109,7 @@ export function getTodayResult(): { score: number; lives: number } | null {
     return null;
 }
 
-// Wordle-style share: the hearts you finished with ARE the result — the
+// Wordle-style share: the lives you finished with ARE the result — the
 // score stays off the share message on purpose
 export function buildShareMessage(): string {
     const stats = getDailyStats();
@@ -118,7 +118,7 @@ export function buildShareMessage(): string {
     const date = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric' });
     return [
         `🐱 Neko Daily · ${date}`,
-        hearts,
+        `${hearts} ${lives}/3 lives`,
         `🔥 Streak: ${stats.streak}`,
         'https://peterkaplan.github.io/neko/',
     ].join('\n');

@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH, textResolution } from '../utils/Constants';
 import { GAME_STATE } from '../utils/GameState';
-import { buildShareMessage, getDailyStats, getTodayResult, todayDateLabel } from '../utils/Daily';
+import { buildShareMessage, getTodayResult, todayDateLabel } from '../utils/Daily';
+import { renderDailyStats } from '../utils/StatsPanel';
 import { addSky } from '../utils/Sky';
 import { posthog, distinctId } from '../utils/posthog';
 
@@ -19,19 +20,19 @@ class DailyClear extends Phaser.Scene {
 
         const centerX = GAME_WIDTH / 2;
 
-        this.add.text(centerX, 150, `DAILY · ${todayDateLabel()}`, {
+        this.add.text(centerX, 85, `DAILY · ${todayDateLabel()}`, {
             fontFamily: 'PixelFont',
             resolution: textResolution(),
-            fontSize: '16px',
+            fontSize: '15px',
             color: '#93ab88',
             stroke: '#0c100a',
             strokeThickness: 4,
         }).setOrigin(0.5);
 
-        this.add.text(centerX, 215, 'CLEAR!', {
+        this.add.text(centerX, 135, 'CLEAR!', {
             fontFamily: 'PixelFont',
             resolution: textResolution(),
-            fontSize: '44px',
+            fontSize: '36px',
             color: '#f2d032',
             stroke: '#0c100a',
             strokeThickness: 8,
@@ -39,43 +40,29 @@ class DailyClear extends Phaser.Scene {
 
         const livesLeft = getTodayResult()?.lives ?? GAME_STATE.lives;
         for (let i = 0; i < 3; i++) {
-            this.add.image(centerX - 40 + i * 40, 262, 'heart')
+            this.add.image(centerX - 40 + i * 40, 186, 'heart')
                 .setScale(3)
                 .setAlpha(i < livesLeft ? 1 : 0.25);
         }
 
-        this.add.text(centerX, 305, `SCORE ${GAME_STATE.score}`, {
+        this.add.text(centerX, 224, `SCORE ${GAME_STATE.score}`, {
             fontFamily: 'PixelFont',
             resolution: textResolution(),
-            fontSize: '20px',
-            color: '#f4efe2',
+            fontSize: '12px',
+            color: '#93ab88',
             stroke: '#0c100a',
-            strokeThickness: 4,
+            strokeThickness: 3,
         }).setOrigin(0.5);
 
-        const stats = getDailyStats();
-        this.add.text(centerX, 350, `SOLVED ${stats.completed} · STREAK ${stats.streak}`, {
-            fontFamily: 'PixelFont',
-            resolution: textResolution(),
-            fontSize: '14px',
-            color: '#f4efe2',
-            stroke: '#0c100a',
-            strokeThickness: 4,
-        }).setOrigin(0.5);
+        // The Wordle moment: your record, right when you finish
+        renderDailyStats(this, () => undefined, 272);
 
-        this.add.text(centerX, 390, 'COME BACK TOMORROW!', {
-            fontFamily: 'PixelFont',
-            resolution: textResolution(),
-            fontSize: '13px',
-            color: '#1f4e6e',
-        }).setOrigin(0.5);
-
-        this.shareLabel = this.addButton(centerX, 460, 'button_red', 'SHARE', () => this.share());
-        this.addButton(centerX, 530, 'button_dark', 'ENDLESS', () => {
+        this.shareLabel = this.addButton(centerX, 552, 'button_red', 'SHARE', () => this.share());
+        this.addButton(centerX, 614, 'button_dark', 'ENDLESS', () => {
             GAME_STATE.mode = 'endless';
             this.goTo('Play');
         });
-        this.addButton(centerX, 600, 'button_dark', 'MENU', () => this.goTo('Start'));
+        this.addButton(centerX, 676, 'button_dark', 'MENU', () => this.goTo('Start'));
     }
 
     private async share(): Promise<void> {
