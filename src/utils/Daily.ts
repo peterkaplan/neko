@@ -46,7 +46,7 @@ export function getDailyStats(): DailyStats {
     return { completed: 0, streak: 0, lastDay: -1 };
 }
 
-export function markTodayCompleted(score: number): void {
+export function markTodayCompleted(score: number, lives: number): void {
     try {
         // Stats only advance on the first clear of the day, so replays can't
         // inflate the counters
@@ -58,19 +58,37 @@ export function markTodayCompleted(score: number): void {
             stats.lastDay = today;
             localStorage.setItem(STATS_KEY, JSON.stringify(stats));
         }
-        localStorage.setItem(storageKey(), JSON.stringify({ score }));
+        localStorage.setItem(storageKey(), JSON.stringify({ score, lives }));
     } catch {
         // storage unavailable (private mode etc.) — completion just isn't remembered
     }
 }
 
-export function buildShareMessage(score: number): string {
+// Today's finished run, if any: score and how many hearts survived
+export function getTodayResult(): { score: number; lives: number } | null {
+    try {
+        const raw = localStorage.getItem(storageKey());
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            return { score: parsed.score ?? 0, lives: parsed.lives ?? 3 };
+        }
+    } catch {
+        // storage unavailable
+    }
+    return null;
+}
+
+// Wordle-style share: the hearts you finished with ARE the result — the
+// score stays off the share message on purpose
+export function buildShareMessage(): string {
     const stats = getDailyStats();
+    const lives = getTodayResult()?.lives ?? 3;
+    const hearts = '❤️'.repeat(lives) + '🖤'.repeat(Math.max(0, 3 - lives));
     const date = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric' });
     return [
         `🐱 Neko Daily · ${date}`,
-        `🐟 Score: ${score}`,
-        `🔥 Streak: ${stats.streak} · Solved: ${stats.completed}`,
+        hearts,
+        `🔥 Streak: ${stats.streak}`,
         'https://peterkaplan.github.io/neko/',
     ].join('\n');
 }

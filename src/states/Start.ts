@@ -9,9 +9,10 @@ import grassB from '../../assets/generated/grass_b.png';
 import keyRight from '../../assets/generated/key_right.png';
 import particleImg from '../../assets/generated/particle.png';
 import heartImg from '../../assets/generated/heart.png';
+import trophyImg from '../../assets/generated/trophy.png';
 import { GAME_HEIGHT, GAME_WIDTH, textResolution } from '../utils/Constants';
 import { GAME_STATE } from '../utils/GameState';
-import { todayDateLabel } from '../utils/Daily';
+import { getDailyStats, todayDateLabel } from '../utils/Daily';
 import { addSky, preloadSky } from '../utils/Sky';
 import { getEndlessBest } from '../utils/HighScores';
 import { posthog, distinctId } from '../utils/posthog';
@@ -38,6 +39,7 @@ class Start extends Phaser.Scene {
         if (!this.textures.exists('fish')) this.load.svg('fish', fishSvg, { width: 128, height: 128 });
         this.load.image('logo', logo);
         this.load.image('key_right', keyRight);
+        if (!this.textures.exists('trophy')) this.load.image('trophy', trophyImg);
     }
 
     create(): void {
@@ -75,6 +77,17 @@ class Start extends Phaser.Scene {
             color: '#1f4e6e',
         }).setOrigin(0.5);
 
+        // Trophy in the top-right corner opens the stats screen
+        const trophyBtn = this.add.image(GAME_WIDTH - 44, 44, 'trophy')
+            .setScale(1.8)
+            .setInteractive({ useHandCursor: true });
+        trophyBtn.on(Phaser.Input.Events.GAMEOBJECT_POINTER_UP, (pointer: Phaser.Input.Pointer) => {
+            if (Math.max(Math.abs(pointer.upX - pointer.downX), Math.abs(pointer.upY - pointer.downY)) > 12) return;
+            this.showStats();
+        });
+        trophyBtn.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OVER, () => trophyBtn.setScale(2));
+        trophyBtn.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT, () => trophyBtn.setScale(1.8));
+
         // First visit: open the instructions unprompted, Wordle-style
         try {
             if (!localStorage.getItem('neko-help-seen')) {
@@ -97,6 +110,52 @@ class Start extends Phaser.Scene {
         }
         overlay.add(dim);
         return overlay;
+    }
+
+    private showStats(): void {
+        posthog.capture({ distinctId, event: 'stats viewed' });
+        const overlay = this.makeOverlay();
+        const centerX = GAME_WIDTH / 2;
+        const stats = getDailyStats();
+
+        overlay.add(this.add.image(centerX, 120, 'trophy').setScale(3));
+        overlay.add(this.add.text(centerX, 185, 'STATS', {
+            fontFamily: 'PixelFont',
+            resolution: textResolution(),
+            fontSize: '26px',
+            color: '#f2d032',
+            stroke: '#0c100a',
+            strokeThickness: 6,
+        }).setOrigin(0.5));
+
+        const header = (y: number, label: string) => overlay.add(this.add.text(centerX, y, label, {
+            fontFamily: 'PixelFont',
+            resolution: textResolution(),
+            fontSize: '12px',
+            color: '#f2d032',
+        }).setOrigin(0.5));
+        const value = (y: number, label: string) => overlay.add(this.add.text(centerX, y, label, {
+            fontFamily: 'PixelFont',
+            resolution: textResolution(),
+            fontSize: '16px',
+            color: '#f4efe2',
+            stroke: '#0c100a',
+            strokeThickness: 4,
+        }).setOrigin(0.5));
+
+        header(265, 'DAILY PUZZLES');
+        value(302, `SOLVED ${stats.completed} · STREAK ${stats.streak}`);
+
+        header(385, 'ENDLESS BEST');
+        value(422, `NORMAL ${getEndlessBest('normal')}`);
+        value(460, `HARD ${getEndlessBest('hard')}`);
+
+        overlay.add(this.add.text(centerX, GAME_HEIGHT - 60, 'TAP ANYWHERE TO CLOSE', {
+            fontFamily: 'PixelFont',
+            resolution: textResolution(),
+            fontSize: '11px',
+            color: '#93ab88',
+        }).setOrigin(0.5));
     }
 
     private showEndlessChooser(): void {

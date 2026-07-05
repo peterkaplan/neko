@@ -102,7 +102,7 @@ export class GameBoard {
 
         if (GAME_STATE.mode === 'daily') {
             GAME_STATE.score += GAME_STATE.lives * 50; // reward surviving lives
-            markTodayCompleted(GAME_STATE.score);
+            markTodayCompleted(GAME_STATE.score, GAME_STATE.lives);
             const stats = getDailyStats();
             posthog.capture({
                 distinctId,

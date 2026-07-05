@@ -268,6 +268,34 @@ const HEART_ROWS = [
     '....XX....',
 ];
 
+// Gold trophy for the stats screen button
+const TROPHY_ROWS = [
+    '................',
+    '.OOOOOOOOOOOOO.',
+    '.OGGGGGGGGGGGO.',
+    'OOGGGGSGGGGGGOO',
+    'OGOGGGSGGGGGOGO',
+    'OGOGGGGGGGGGOGO',
+    'OOGGGGGGGGGGGOO',
+    '.OGGGGGGGGGGGO.',
+    '..OGGGGGGGGGO..',
+    '...OGGGGGGGO...',
+    '....OOGGGOO....',
+    '......OGO......',
+    '.....OGGGO.....',
+    '...OOGGGGGOO...',
+    '..OGGGGGGGGGO..',
+    '..OOOOOOOOOOO..',
+];
+
+function trophy() {
+    drawMap(TROPHY_ROWS, {
+        O: hex('#6b4a10'),
+        G: hex('#f2c14e'),
+        S: hex('#fff3c4'),
+    }, 2).save('trophy.png');
+}
+
 function heart() {
     const s = new Sprite(12, 11);
     HEART_ROWS.forEach((row, y) => {
@@ -390,6 +418,7 @@ cloudSprite('cloud_b.png', 20, 3);
 cloudSprite('cloud_c.png', 24, 12);
 wallTexture();
 fishSvg();
+trophy();
 heart();
 particle();
 keycap();

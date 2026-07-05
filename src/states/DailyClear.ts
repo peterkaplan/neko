@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH, textResolution } from '../utils/Constants';
 import { GAME_STATE } from '../utils/GameState';
-import { buildShareMessage, getDailyStats, todayDateLabel } from '../utils/Daily';
+import { buildShareMessage, getDailyStats, getTodayResult, todayDateLabel } from '../utils/Daily';
 import { addSky } from '../utils/Sky';
 import { posthog, distinctId } from '../utils/posthog';
 
@@ -36,6 +36,13 @@ class DailyClear extends Phaser.Scene {
             stroke: '#0c100a',
             strokeThickness: 8,
         }).setOrigin(0.5);
+
+        const livesLeft = getTodayResult()?.lives ?? GAME_STATE.lives;
+        for (let i = 0; i < 3; i++) {
+            this.add.image(centerX - 40 + i * 40, 262, 'heart')
+                .setScale(3)
+                .setAlpha(i < livesLeft ? 1 : 0.25);
+        }
 
         this.add.text(centerX, 305, `SCORE ${GAME_STATE.score}`, {
             fontFamily: 'PixelFont',
@@ -72,7 +79,7 @@ class DailyClear extends Phaser.Scene {
     }
 
     private async share(): Promise<void> {
-        const message = buildShareMessage(GAME_STATE.score);
+        const message = buildShareMessage();
         try {
             // Mobile gets the native share sheet; desktop copies to clipboard
             // (desktop Chrome exposes navigator.share too, but its dialog is clunky)
