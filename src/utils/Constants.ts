@@ -39,3 +39,13 @@ export const WALL_THICKNESS = 10;
 
 // Small boards shouldn't produce comically large tiles
 export const MAX_TILE_SIZE = 52;
+
+// Text is rendered into its own texture; matching that texture to the real
+// device resolution keeps the pixel font crisp on retina/mobile screens where
+// the 720-tall logical canvas gets stretched up.
+export function textResolution(): number {
+    if (typeof window === 'undefined') return 1;
+    const upscale = window.innerHeight / GAME_HEIGHT;
+    const dpr = window.devicePixelRatio || 1;
+    return Math.min(4, Math.max(1, upscale * dpr));
+}

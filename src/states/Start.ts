@@ -9,7 +9,7 @@ import grassB from '../../assets/generated/grass_b.png';
 import keyRight from '../../assets/generated/key_right.png';
 import particleImg from '../../assets/generated/particle.png';
 import heartImg from '../../assets/generated/heart.png';
-import { GAME_HEIGHT, GAME_WIDTH } from '../utils/Constants';
+import { GAME_HEIGHT, GAME_WIDTH, textResolution } from '../utils/Constants';
 import { GAME_STATE } from '../utils/GameState';
 import { todayDateLabel } from '../utils/Daily';
 import { addSky, preloadSky } from '../utils/Sky';
@@ -52,7 +52,6 @@ class Start extends Phaser.Scene {
 
         const cat = this.add.image(centerX - 55, 360, 'title_cat');
         cat.setScale(0.85);
-        this.textures.get('fish')?.setFilter(Phaser.Textures.FilterMode.LINEAR);
         this.add.image(centerX + 90, 390, 'fish').setScale(0.9);
 
         // Gentle idle bob so the title screen feels alive
@@ -71,6 +70,7 @@ class Start extends Phaser.Scene {
 
         this.add.text(centerX, GAME_HEIGHT - 50, 'M TO MUTE', {
             fontFamily: 'PixelFont',
+            resolution: textResolution(),
             fontSize: '11px',
             color: '#1f4e6e',
         }).setOrigin(0.5);
@@ -105,6 +105,7 @@ class Start extends Phaser.Scene {
 
         overlay.add(this.add.text(centerX, 230, 'ENDLESS', {
             fontFamily: 'PixelFont',
+            resolution: textResolution(),
             fontSize: '26px',
             color: '#f2d032',
             stroke: '#0c100a',
@@ -119,6 +120,7 @@ class Start extends Phaser.Scene {
         const bestNormal = getEndlessBest('normal');
         overlay.add(this.add.text(centerX, 372, bestNormal > 0 ? `EASES YOU IN · BEST ${bestNormal}` : 'EASES YOU IN', {
             fontFamily: 'PixelFont',
+            resolution: textResolution(),
             fontSize: '10px',
             color: '#93ab88',
         }).setOrigin(0.5));
@@ -131,12 +133,14 @@ class Start extends Phaser.Scene {
         const bestHard = getEndlessBest('hard');
         overlay.add(this.add.text(centerX, 482, bestHard > 0 ? `BIGGER BOARDS, MORE FISH · BEST ${bestHard}` : 'BIGGER BOARDS, MORE FISH', {
             fontFamily: 'PixelFont',
+            resolution: textResolution(),
             fontSize: '10px',
             color: '#93ab88',
         }).setOrigin(0.5));
 
         overlay.add(this.add.text(centerX, GAME_HEIGHT - 60, 'TAP ANYWHERE ELSE TO GO BACK', {
             fontFamily: 'PixelFont',
+            resolution: textResolution(),
             fontSize: '11px',
             color: '#93ab88',
         }).setOrigin(0.5));
@@ -150,6 +154,7 @@ class Start extends Phaser.Scene {
 
         overlay.add(this.add.text(centerX, 90, 'HOW TO PLAY', {
             fontFamily: 'PixelFont',
+            resolution: textResolution(),
             fontSize: '26px',
             color: '#f2d032',
             stroke: '#0c100a',
@@ -158,6 +163,7 @@ class Start extends Phaser.Scene {
 
         const step = this.add.text(centerX, 140, '', {
             fontFamily: 'PixelFont',
+            resolution: textResolution(),
             fontSize: '11px',
             color: '#f2d032',
         }).setOrigin(0.5);
@@ -165,6 +171,7 @@ class Start extends Phaser.Scene {
 
         const caption = this.add.text(centerX, 190, '', {
             fontFamily: 'PixelFont',
+            resolution: textResolution(),
             fontSize: '14px',
             color: '#f4efe2',
             align: 'center',
@@ -241,6 +248,7 @@ class Start extends Phaser.Scene {
         // Escape hatch (small and out of the way — the point is to do the moves)
         const skip = this.add.text(GAME_WIDTH - 20, 20, 'SKIP', {
             fontFamily: 'PixelFont',
+            resolution: textResolution(),
             fontSize: '11px',
             color: '#93ab88',
         }).setOrigin(1, 0).setInteractive({ useHandCursor: true });
@@ -252,6 +260,7 @@ class Start extends Phaser.Scene {
 
         overlay.add(this.add.text(centerX, GAME_HEIGHT - 70, 'A NEW DAILY PUZZLE EVERY DAY AT MIDNIGHT', {
             fontFamily: 'PixelFont',
+            resolution: textResolution(),
             fontSize: '11px',
             color: '#93ab88',
             align: 'center',
@@ -437,6 +446,7 @@ TO GRAB IT`);
         pill.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT, () => pill.clearTint());
         const text = this.add.text(x, y, label, {
             fontFamily: 'PixelFont',
+            resolution: textResolution(),
             fontSize: '15px',
             color: '#f4efe2',
             stroke: '#0c100a',

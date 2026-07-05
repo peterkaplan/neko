@@ -9,8 +9,8 @@ import { fileURLToPath } from 'url';
 
 const OUT_FILE = join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'utils', 'dailyPuzzles.ts');
 
-const BOARD_WIDTH = 14;  // interior 12 cols — the original game's board size
-const BOARD_HEIGHT = 14; // interior 12 rows
+const BOARD_WIDTH = 13;  // interior 11 cols
+const BOARD_HEIGHT = 13; // interior 11 rows
 const JAR_COUNT = 14;
 const PUZZLE_COUNT = 7;
 // Difficulty band: at most this many valid complete orderings out of the 14!

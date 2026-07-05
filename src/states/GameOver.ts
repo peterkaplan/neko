@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_HEIGHT, GAME_WIDTH } from '../utils/Constants';
+import { GAME_HEIGHT, GAME_WIDTH, textResolution } from '../utils/Constants';
 import { GAME_STATE } from '../utils/GameState';
 import { todayDateLabel } from '../utils/Daily';
 import { addSky } from '../utils/Sky';
@@ -22,6 +22,7 @@ class GameOver extends Phaser.Scene {
 
         this.add.text(centerX, 190, 'GAME OVER', {
             fontFamily: 'PixelFont',
+            resolution: textResolution(),
             fontSize: '40px',
             color: '#e8384f',
             stroke: '#0c100a',
@@ -30,6 +31,7 @@ class GameOver extends Phaser.Scene {
 
         this.add.text(centerX, 290, `SCORE ${GAME_STATE.score}`, {
             fontFamily: 'PixelFont',
+            resolution: textResolution(),
             fontSize: '20px',
             color: '#f4efe2',
             stroke: '#0c100a',
@@ -39,6 +41,7 @@ class GameOver extends Phaser.Scene {
         const context = GAME_STATE.mode === 'daily' ? `DAILY · ${todayDateLabel()}` : `LEVEL ${GAME_STATE.currentLevel}`;
         this.add.text(centerX, 330, context, {
             fontFamily: 'PixelFont',
+            resolution: textResolution(),
             fontSize: '14px',
             color: '#93ab88',
         }).setOrigin(0.5);
@@ -70,6 +73,7 @@ class GameOver extends Phaser.Scene {
             const label = isNewBest ? 'NEW BEST!' : `BEST ${getEndlessBest(GAME_STATE.difficulty)}`;
             this.add.text(centerX, 375, label, {
                 fontFamily: 'PixelFont',
+                resolution: textResolution(),
                 fontSize: '15px',
                 color: isNewBest ? '#f2d032' : '#cfe3c2',
                 stroke: '#0c100a',
@@ -99,6 +103,7 @@ class GameOver extends Phaser.Scene {
         pill.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT, () => pill.clearTint());
         this.add.text(x, y, label, {
             fontFamily: 'PixelFont',
+            resolution: textResolution(),
             fontSize: '15px',
             color: '#f4efe2',
             stroke: '#0c100a',

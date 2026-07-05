@@ -188,25 +188,70 @@ function drawMap(rows, palette, scale = 2) {
     return s;
 }
 
-// A cute goldfish as a crisp SVG so it stays sharp at any screen size —
-// round body, flowing tail, big eye, little smile
+// A pixel-art goldfish emitted as a crisp-edged SVG: the pixel grid is
+// computed (ellipse body, bowtie tail, outline pass) and each run of pixels
+// becomes a rect, so it keeps the chunky look but scales sharply on any screen
 function fishSvg() {
-    const O = '#6b3212';
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <path d="M42 32 Q56 12 61 18 Q58 27 48 32 Q58 37 61 46 Q56 52 42 36 Z" fill="#ef8a2e" stroke="${O}" stroke-width="2.5" stroke-linejoin="round"/>
-  <path d="M15 22 Q21 5 34 16 Q24 13 17 23 Z" fill="#ef8a2e" stroke="${O}" stroke-width="2.5" stroke-linejoin="round"/>
-  <ellipse cx="26" cy="32" rx="18" ry="14" fill="#f7a13f" stroke="${O}" stroke-width="2.5"/>
-  <path d="M11 38 Q26 50 41 37 Q35 45.5 26 46 Q16 45.5 11 38 Z" fill="#ffd9a0"/>
-  <path d="M27 38 Q33 40 31 46 Q25 44 25 40 Z" fill="#ef8a2e" stroke="${O}" stroke-width="2" stroke-linejoin="round"/>
-  <circle cx="17" cy="30" r="5.4" fill="#ffffff" stroke="${O}" stroke-width="1.6"/>
-  <circle cx="16" cy="31" r="2.7" fill="#241226"/>
-  <circle cx="18.6" cy="28.4" r="1.3" fill="#ffffff"/>
-  <path d="M9 37.5 Q11.5 40 14 37.5" stroke="${O}" stroke-width="2" fill="none" stroke-linecap="round"/>
-  <circle cx="11.5" cy="34.5" r="2" fill="#ff9d9d" opacity="0.55"/>
-</svg>
-`;
+    const SIZE = 32;
+    const mask = Array.from({ length: SIZE }, () => new Array(SIZE).fill(false));
+    const inEllipse = (x, y, cx, cy, rx, ry) => ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1;
+    for (let y = 0; y < SIZE; y++) {
+        for (let x = 0; x < SIZE; x++) {
+            const body = inEllipse(x, y, 12, 17, 9.5, 6.5);
+            // tail: triangle widening to the right with a V notch cut into it
+            const spread = (x - 19) * 0.75 + 1;
+            const notch = (x - 24) * 1.2;
+            const tail = x >= 19 && x <= 27 && Math.abs(y - 17) <= spread && Math.abs(y - 17) >= Math.max(0, notch);
+            if (body || tail) mask[y][x] = true;
+        }
+    }
+
+    const BODY = '#f59a3e';
+    const DARK = '#d9772a';
+    const BELLY = '#ffd9a0';
+    const OUT = '#79380f';
+    const INK = '#2e1a0c';
+    const grid = Array.from({ length: SIZE }, () => new Array(SIZE).fill(null));
+    for (let y = 0; y < SIZE; y++) {
+        for (let x = 0; x < SIZE; x++) {
+            if (!mask[y][x]) continue;
+            let color = BODY;
+            if (x >= 20) color = DARK;                 // tail
+            else if (y >= 20 && x < 16) color = BELLY; // belly
+            grid[y][x] = color;
+        }
+    }
+    // crisp 1px outline all around the silhouette
+    for (let y = 0; y < SIZE; y++) {
+        for (let x = 0; x < SIZE; x++) {
+            if (mask[y][x]) continue;
+            if (mask[y - 1]?.[x] || mask[y + 1]?.[x] || mask[y][x - 1] || mask[y][x + 1]) grid[y][x] = OUT;
+        }
+    }
+    // big friendly eye near the nose, and a little smile on the belly
+    for (let y = 13; y < 16; y++) for (let x = 6; x < 9; x++) grid[y][x] = '#ffffff';
+    for (let y = 14; y < 16; y++) for (let x = 6; x < 8; x++) grid[y][x] = INK;
+    grid[20][5] = INK;
+    grid[21][6] = INK;
+    grid[21][7] = INK;
+    grid[20][8] = INK;
+
+    // emit each horizontal run of same-colored pixels as one rect
+    const rects = [];
+    for (let y = 0; y < SIZE; y++) {
+        let x = 0;
+        while (x < SIZE) {
+            const color = grid[y][x];
+            if (!color) { x++; continue; }
+            let w = 1;
+            while (x + w < SIZE && grid[y][x + w] === color) w++;
+            rects.push(`<rect x="${x}" y="${y}" width="${w}" height="1" fill="${color}"/>`);
+            x += w;
+        }
+    }
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${SIZE} ${SIZE}" shape-rendering="crispEdges">\n${rects.join('\n')}\n</svg>\n`;
     writeFileSync(join(OUT_DIR, 'fish.svg'), svg);
-    console.log('  fish.svg');
+    console.log('  fish.svg (pixel, ' + rects.length + ' rects)');
 }
 
 // ---------------------------------------------------------------- ui + fx

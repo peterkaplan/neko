@@ -1,9 +1,10 @@
 import { GAME_STATE } from "../utils/GameState";
-import { GAME_WIDTH } from "../utils/Constants";
+import { GAME_WIDTH, textResolution } from "../utils/Constants";
 import { todayDateLabel } from "./Daily";
 
 const TEXT_STYLE: Phaser.Types.GameObjects.Text.TextStyle = {
     fontFamily: 'PixelFont',
+    resolution: textResolution(),
     color: '#cfe3c2',
     stroke: '#0c100a',
     strokeThickness: 4,

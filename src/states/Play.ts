@@ -23,7 +23,7 @@ import { GAME_STATE, resetGameState } from '../utils/GameState';
 import { LevelManager } from '../utils/LevelManager';
 import BoardInitializer from '../utils/BoardInitializer';
 import Scoreboard from '../utils/Scoreboard';
-import { GAME_HEIGHT, GAME_WIDTH } from '../utils/Constants';
+import { GAME_HEIGHT, GAME_WIDTH, textResolution } from '../utils/Constants';
 
 // A held key only re-fires this long after the cat lands (DAS-style repeat
 // delay), so an ordinary tap that outlasts a short slide can't double-move
@@ -68,8 +68,6 @@ class Play extends Phaser.Scene {
 
     create(): void {
         resetGameState();
-        // The fish is a rasterized vector, not pixel art — scale it smoothly
-        this.textures.get('fish')?.setFilter(Phaser.Textures.FilterMode.LINEAR);
         this.cameras.main.fadeIn(500, 0, 0, 0);
         this.drawBackdrop();
         this.setupSwipeInput();
@@ -139,6 +137,7 @@ class Play extends Phaser.Scene {
         pill.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT, () => pill.clearTint());
         this.add.text(x, y, label, {
             fontFamily: 'PixelFont',
+            resolution: textResolution(),
             fontSize: '14px',
             color: '#cfe3c2',
             stroke: '#0c100a',

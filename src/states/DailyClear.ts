@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_HEIGHT, GAME_WIDTH } from '../utils/Constants';
+import { GAME_HEIGHT, GAME_WIDTH, textResolution } from '../utils/Constants';
 import { GAME_STATE } from '../utils/GameState';
 import { buildShareMessage, getDailyStats, todayDateLabel } from '../utils/Daily';
 import { addSky } from '../utils/Sky';
@@ -21,6 +21,7 @@ class DailyClear extends Phaser.Scene {
 
         this.add.text(centerX, 150, `DAILY · ${todayDateLabel()}`, {
             fontFamily: 'PixelFont',
+            resolution: textResolution(),
             fontSize: '16px',
             color: '#93ab88',
             stroke: '#0c100a',
@@ -29,6 +30,7 @@ class DailyClear extends Phaser.Scene {
 
         this.add.text(centerX, 215, 'CLEAR!', {
             fontFamily: 'PixelFont',
+            resolution: textResolution(),
             fontSize: '44px',
             color: '#f2d032',
             stroke: '#0c100a',
@@ -37,6 +39,7 @@ class DailyClear extends Phaser.Scene {
 
         this.add.text(centerX, 305, `SCORE ${GAME_STATE.score}`, {
             fontFamily: 'PixelFont',
+            resolution: textResolution(),
             fontSize: '20px',
             color: '#f4efe2',
             stroke: '#0c100a',
@@ -46,6 +49,7 @@ class DailyClear extends Phaser.Scene {
         const stats = getDailyStats();
         this.add.text(centerX, 350, `SOLVED ${stats.completed} · STREAK ${stats.streak}`, {
             fontFamily: 'PixelFont',
+            resolution: textResolution(),
             fontSize: '14px',
             color: '#f4efe2',
             stroke: '#0c100a',
@@ -54,6 +58,7 @@ class DailyClear extends Phaser.Scene {
 
         this.add.text(centerX, 390, 'COME BACK TOMORROW!', {
             fontFamily: 'PixelFont',
+            resolution: textResolution(),
             fontSize: '13px',
             color: '#1f4e6e',
         }).setOrigin(0.5);
@@ -97,6 +102,7 @@ class DailyClear extends Phaser.Scene {
         pill.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT, () => pill.clearTint());
         return this.add.text(x, y, label, {
             fontFamily: 'PixelFont',
+            resolution: textResolution(),
             fontSize: '15px',
             color: '#f4efe2',
             stroke: '#0c100a',
