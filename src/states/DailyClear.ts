@@ -13,7 +13,7 @@ class DailyClear extends Phaser.Scene {
     }
 
     create(): void {
-        this.cameras.main.fadeIn(400, 0, 0, 0);
+        this.cameras.main.fadeIn(200, 0, 0, 0);
 
         addSky(this);
 
@@ -118,7 +118,7 @@ class DailyClear extends Phaser.Scene {
     }
 
     private goTo(sceneKey: string): void {
-        this.cameras.main.fadeOut(300, 0, 0, 0);
+        this.cameras.main.fadeOut(150, 0, 0, 0);
         this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
             this.scene.start(sceneKey);
         });

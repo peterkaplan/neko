@@ -33,6 +33,18 @@ const game = new Phaser.Game(gameConfig);
 // Handy for debugging and driving the game from tests
 (window as any).game = game;
 
+// Temporary FPS readout for perf diagnosis
+const fpsEl = document.createElement('div');
+Object.assign(fpsEl.style, {
+    position: 'fixed', right: '6px', bottom: '6px', zIndex: '10',
+    font: '12px monospace', color: '#0c100a', background: 'rgba(255,255,255,0.55)',
+    padding: '2px 6px', borderRadius: '3px', pointerEvents: 'none',
+});
+document.body.appendChild(fpsEl);
+setInterval(() => {
+    fpsEl.textContent = `${Math.round(game.loop.actualFps)} FPS`;
+}, 500);
+
 // Keep the canvas truly full-screen when the window changes shape: recompute
 // the logical width, resize the game, and restart the active scene so it lays
 // out for the new dimensions. Play snapshots its progress first, so a mid-run

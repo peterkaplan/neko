@@ -43,7 +43,7 @@ class Start extends Phaser.Scene {
     }
 
     create(): void {
-        this.cameras.main.fadeIn(400, 0, 0, 0);
+        this.cameras.main.fadeIn(200, 0, 0, 0);
 
         addSky(this);
 
@@ -585,7 +585,7 @@ TO GRAB IT`);
                 difficulty: mode === 'endless' ? GAME_STATE.difficulty : undefined,
             },
         });
-        this.cameras.main.fadeOut(400, 0, 0, 0);
+        this.cameras.main.fadeOut(200, 0, 0, 0);
         this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
             this.scene.start('Play');
         });

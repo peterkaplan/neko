@@ -70,7 +70,7 @@ class Play extends Phaser.Scene {
     create(): void {
         resetGameState();
         if (GAME_STATE.mode === 'daily') markTodayPlayed();
-        this.cameras.main.fadeIn(500, 0, 0, 0);
+        this.cameras.main.fadeIn(250, 0, 0, 0);
         this.drawBackdrop();
         this.setupSwipeInput();
         this.input.keyboard?.on('keydown-M', () => {

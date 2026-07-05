@@ -12,7 +12,7 @@ class GameOver extends Phaser.Scene {
     }
 
     create(): void {
-        this.cameras.main.fadeIn(400, 0, 0, 0);
+        this.cameras.main.fadeIn(200, 0, 0, 0);
 
         addSky(this);
         // dusky red veil over the sky so the defeat screen still reads as somber
@@ -112,7 +112,7 @@ class GameOver extends Phaser.Scene {
     }
 
     private goTo(sceneKey: string): void {
-        this.cameras.main.fadeOut(300, 0, 0, 0);
+        this.cameras.main.fadeOut(150, 0, 0, 0);
         this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
             this.scene.start(sceneKey);
         });
