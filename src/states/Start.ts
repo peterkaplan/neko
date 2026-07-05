@@ -8,6 +8,7 @@ import grassA from '../../assets/generated/grass_a.png';
 import grassB from '../../assets/generated/grass_b.png';
 import keyRight from '../../assets/generated/key_right.png';
 import particleImg from '../../assets/generated/particle.png';
+import heartImg from '../../assets/generated/heart.png';
 import { GAME_HEIGHT, GAME_WIDTH } from '../utils/Constants';
 import { GAME_STATE } from '../utils/GameState';
 import { todayDateLabel } from '../utils/Daily';
@@ -21,13 +22,15 @@ const DEMO_COLS = 7;
 const DEMO_ROWS = 3;
 
 interface DemoParts {
+    step: Phaser.GameObjects.Text;
     caption: Phaser.GameObjects.Text;
     cat: Phaser.GameObjects.Image;
-    jar: Phaser.GameObjects.Image;
-    key: Phaser.GameObjects.Image;
+    fish: Phaser.GameObjects.Image;
+    hearts: Phaser.GameObjects.Image[];
     cellX: (col: number) => number;
     midY: number;
     tile: number;
+    pulse: () => void;
 }
 
 class Start extends Phaser.Scene {
@@ -42,6 +45,7 @@ class Start extends Phaser.Scene {
         if (!this.textures.exists('grass_a')) this.load.image('grass_a', grassA);
         if (!this.textures.exists('grass_b')) this.load.image('grass_b', grassB);
         if (!this.textures.exists('particle')) this.load.image('particle', particleImg);
+        if (!this.textures.exists('heart')) this.load.image('heart', heartImg);
         this.load.image('title_cat', catIdle);
         this.load.image('title_fish', fishImg);
         this.load.image('logo', logo);
@@ -151,8 +155,9 @@ class Start extends Phaser.Scene {
         posthog.capture({ distinctId, event: 'how to play viewed' });
         const overlay = this.makeOverlay();
         const centerX = GAME_WIDTH / 2;
+        const isTouch = navigator.maxTouchPoints > 0;
 
-        overlay.add(this.add.text(centerX, 100, 'HOW TO PLAY', {
+        overlay.add(this.add.text(centerX, 90, 'HOW TO PLAY', {
             fontFamily: 'PixelFont',
             fontSize: '26px',
             color: '#f2d032',
@@ -160,20 +165,28 @@ class Start extends Phaser.Scene {
             strokeThickness: 6,
         }).setOrigin(0.5));
 
-        const caption = this.add.text(centerX, 180, '', {
+        const step = this.add.text(centerX, 140, '', {
+            fontFamily: 'PixelFont',
+            fontSize: '11px',
+            color: '#f2d032',
+        }).setOrigin(0.5);
+        overlay.add(step);
+
+        const caption = this.add.text(centerX, 190, '', {
             fontFamily: 'PixelFont',
             fontSize: '14px',
             color: '#f4efe2',
             align: 'center',
+            lineSpacing: 8,
             wordWrap: { width: GAME_WIDTH - 32 },
         }).setOrigin(0.5);
         overlay.add(caption);
 
-        // Mini board: checkered grass framed by a wall, one cat, one jar.
+        // Mini board: checkered grass framed by a wall, one cat, one fish.
         // Tiles shrink on narrow (phone) screens so the board always fits.
         const tile = Math.min(DEMO_TILE, Math.floor((GAME_WIDTH - 40) / DEMO_COLS));
         const boardX = centerX - (DEMO_COLS * tile) / 2;
-        const boardY = 240;
+        const boardY = 250;
         for (let row = 0; row < DEMO_ROWS; row++) {
             for (let col = 0; col < DEMO_COLS; col++) {
                 overlay.add(this.add.image(
@@ -191,77 +204,116 @@ class Start extends Phaser.Scene {
         const cellX = (col: number) => boardX + col * tile + tile / 2;
         const midY = boardY + tile * 1.5;
 
-        const jar = this.add.image(cellX(4), midY, 'title_fish').setScale(1.4 * (tile / DEMO_TILE));
+        const fish = this.add.image(cellX(4), midY, 'title_fish').setScale(1.4 * (tile / DEMO_TILE));
         const cat = this.add.image(cellX(0), midY, 'title_cat').setScale(0.19 * (tile / DEMO_TILE));
-        overlay.add(jar);
+        overlay.add(fish);
         overlay.add(cat);
 
-        const key = this.add.image(centerX, 460, 'key_right').setScale(2.2);
-        overlay.add(key);
+        // The demo's lives, so "lose a heart" is something you can see happen
+        const hearts: Phaser.GameObjects.Image[] = [];
+        for (let i = 0; i < 3; i++) {
+            const heart = this.add.image(centerX - 36 + i * 36, boardY + DEMO_ROWS * tile + 32, 'heart').setScale(2.5);
+            hearts.push(heart);
+            overlay.add(heart);
+        }
 
-        overlay.add(this.add.text(centerX, GAME_HEIGHT - 115, 'NEKO SLIDES UNTIL SOMETHING STOPS HIM\nNEW PUZZLE AT MIDNIGHT', {
+        // Input indicator: a pulsing arrow keycap on desktop, a finger-dot
+        // swiping right on touch screens
+        const indicatorY = boardY + DEMO_ROWS * tile + 84;
+        let pulse: () => void;
+        if (isTouch) {
+            const dot = this.add.circle(centerX - 55, indicatorY, 9, 0xf4efe2).setAlpha(0);
+            overlay.add(dot);
+            pulse = () => {
+                if (!overlay.active) return;
+                dot.setPosition(centerX - 55, indicatorY).setAlpha(1);
+                this.tweens.add({ targets: dot, x: centerX + 55, alpha: 0.15, duration: 550, ease: 'Sine.easeOut' });
+            };
+        } else {
+            const key = this.add.image(centerX, indicatorY, 'key_right').setScale(2.2);
+            overlay.add(key);
+            pulse = () => {
+                if (!overlay.active) return;
+                this.tweens.add({ targets: key, scale: 1.7, duration: 110, yoyo: true });
+            };
+        }
+
+        overlay.add(this.add.text(centerX, GAME_HEIGHT - 105, 'A NEW DAILY PUZZLE EVERY DAY AT MIDNIGHT', {
             fontFamily: 'PixelFont',
             fontSize: '11px',
             color: '#93ab88',
             align: 'center',
-            lineSpacing: 8,
             wordWrap: { width: GAME_WIDTH - 32 },
         }).setOrigin(0.5));
-        overlay.add(this.add.text(centerX, GAME_HEIGHT - 60, 'TAP ANYWHERE TO CLOSE', {
+        overlay.add(this.add.text(centerX, GAME_HEIGHT - 55, 'TAP ANYWHERE TO CLOSE', {
             fontFamily: 'PixelFont',
             fontSize: '11px',
             color: '#93ab88',
         }).setOrigin(0.5));
 
-        this.runDemo(overlay, { caption, cat, jar, key, cellX, midY, tile });
+        this.runDemo(overlay, { step, caption, cat, fish, hearts, cellX, midY, tile, pulse });
     }
 
-    // One loop of the demo: slide into the jar (collect), then into the wall
-    // (crash), then reset and repeat. Every async hop checks the overlay is
-    // still alive so closing it stops the show.
+    // One slow, spelled-out loop: how to move, that the cat slides, that fish
+    // stop him and win the game, that walls crash and cost a heart. Every
+    // async hop checks the overlay is still alive so closing it stops the show.
     private runDemo(overlay: Phaser.GameObjects.Container, parts: DemoParts): void {
         if (!overlay.active) return;
-        const { caption, cat, jar, key, cellX, midY, tile } = parts;
+        const { step, caption, cat, fish, hearts, cellX, midY, tile, pulse } = parts;
 
+        // reset for this loop
         cat.setPosition(cellX(0), midY).setAlpha(1);
-        jar.setScale(1.4 * (tile / DEMO_TILE));
-        caption.setText('SWIPE OR PRESS AN ARROW KEY');
+        fish.setScale(1.4 * (tile / DEMO_TILE)).setAlpha(1);
+        hearts.forEach(h => h.setAlpha(1));
 
-        const pressKey = () => this.tweens.add({ targets: key, scale: 1.8, duration: 90, yoyo: true });
-
-        this.time.delayedCall(800, () => {
-            if (!overlay.active) return;
-            pressKey();
-            this.tweens.add({
-                targets: cat,
-                x: cellX(4),
-                duration: 480,
-                ease: 'Linear',
-                onComplete: () => {
-                    if (!overlay.active) return;
-                    caption.setText('COLLECT EVERY FISH TO WIN!');
-                    this.burst(overlay, cellX(4), midY);
-                    this.tweens.add({ targets: jar, scale: 0, duration: 150 });
-                    this.time.delayedCall(1400, () => {
-                        if (!overlay.active) return;
-                        caption.setText("DON'T HIT THE WALLS!");
-                        pressKey();
-                        this.tweens.add({
-                            targets: cat,
-                            x: cellX(6) + tile / 2 - 10,
-                            duration: 300,
-                            ease: 'Linear',
-                            onComplete: () => {
-                                if (!overlay.active) return;
-                                cat.setAlpha(0);
-                                this.burst(overlay, cellX(6) + tile / 2, midY, 0xff7d6a);
-                                this.time.delayedCall(1500, () => this.runDemo(overlay, parts));
-                            },
-                        });
-                    });
-                },
-            });
+        const at = (ms: number, fn: () => void) => this.time.delayedCall(ms, () => {
+            if (overlay.active) fn();
         });
+
+        step.setText('STEP 1 OF 4');
+        caption.setText(navigator.maxTouchPoints > 0
+            ? 'SWIPE YOUR FINGER IN ANY DIRECTION\nTO MOVE NEKO THE CAT'
+            : 'PRESS AN ARROW KEY\nTO MOVE NEKO THE CAT');
+        at(700, pulse);
+        at(1800, pulse);
+
+        at(3000, () => {
+            step.setText('STEP 2 OF 4');
+            caption.setText('NEKO SLIDES ALL THE WAY —\nHE ONLY STOPS WHEN HE HITS SOMETHING');
+        });
+        at(3900, () => {
+            pulse();
+            this.tweens.add({ targets: cat, x: cellX(4), duration: 900, ease: 'Linear' });
+        });
+        at(4800, () => {
+            step.setText('STEP 3 OF 4');
+            caption.setText('HE CAUGHT A FISH! FISH STOP HIM.\nCATCH EVERY FISH TO WIN THE LEVEL');
+            this.burst(overlay, cellX(4), midY);
+            this.tweens.add({ targets: fish, scale: 0, duration: 150 });
+        });
+
+        at(8300, () => {
+            step.setText('STEP 4 OF 4');
+            caption.setText('BUT BE CAREFUL! IF NO FISH IS AHEAD,\nNEKO CRASHES INTO THE WALL...');
+        });
+        at(9700, () => {
+            pulse();
+            this.tweens.add({ targets: cat, x: cellX(6) + tile / 2 - 10, duration: 350, ease: 'Linear' });
+        });
+        at(10050, () => {
+            cat.setAlpha(0);
+            this.burst(overlay, cellX(6) + tile / 2, midY, 0xff7d6a);
+            hearts[2].setAlpha(0.2);
+        });
+        at(10700, () => {
+            caption.setText('A CRASH COSTS ONE HEART.\nLOSE ALL 3 HEARTS = GAME OVER');
+        });
+
+        at(14000, () => {
+            step.setText('');
+            caption.setText("THAT'S EVERYTHING! CATCH THE FISH,\nDODGE THE WALLS. GOOD LUCK!");
+        });
+        at(16800, () => this.runDemo(overlay, parts));
     }
 
     private burst(overlay: Phaser.GameObjects.Container, x: number, y: number, tint?: number): void {
