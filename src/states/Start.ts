@@ -439,6 +439,7 @@ class Start extends Phaser.Scene {
             properties: {
                 mode,
                 difficulty: mode === 'endless' ? GAME_STATE.difficulty : undefined,
+                entry: 'menu',
             },
         });
         this.cameras.main.fadeOut(200, 0, 0, 0);

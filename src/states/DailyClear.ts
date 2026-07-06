@@ -60,6 +60,12 @@ class DailyClear extends Phaser.Scene {
         this.shareLabel = this.addButton(centerX, 552, 'button_red', 'SHARE', () => this.share());
         this.addButton(centerX, 614, 'button_dark', 'ENDLESS', () => {
             GAME_STATE.mode = 'endless';
+            // This path skips Start.startGame, so it captures its own start
+            posthog.capture({
+                distinctId,
+                event: 'game started',
+                properties: { mode: 'endless', difficulty: GAME_STATE.difficulty, entry: 'daily_clear' },
+            });
             this.goTo('Play');
         });
         this.addButton(centerX, 676, 'button_dark', 'MENU', () => this.goTo('Start'));
