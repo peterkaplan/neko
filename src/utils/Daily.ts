@@ -120,6 +120,6 @@ export function buildShareMessage(): string {
         `🐱 Neko Daily · ${date}`,
         `${hearts} ${lives}/3 lives`,
         `🔥 Streak: ${stats.streak}`,
-        'https://nekopuzzle.com',
+        'https://nekopuzzle.com/?utm_source=share',
     ].join('\n');
 }

@@ -58,7 +58,11 @@ class Start extends Phaser.Scene {
 
         this.addButton(centerX, GAME_HEIGHT - 250, 'button_red', `DAILY · ${todayDateLabel()}`, () => this.startGame('daily'));
         this.addButton(centerX, GAME_HEIGHT - 180, 'button_dark', 'ENDLESS', () => this.showEndlessChooser());
-        this.addButton(centerX, GAME_HEIGHT - 110, 'button_dark', 'HOW TO PLAY', () => this.showHowToPlay('button'));
+        // New players get the tutorial on their first game start instead;
+        // the button is a re-read affordance so it only shows after that
+        if (this.helpSeen()) {
+            this.addButton(centerX, GAME_HEIGHT - 110, 'button_dark', 'HOW TO PLAY', () => this.showHowToPlay('button'));
+        }
 
         this.add.text(centerX, GAME_HEIGHT - 50, 'M TO MUTE', {
             fontFamily: 'PixelFont',
@@ -78,14 +82,14 @@ class Start extends Phaser.Scene {
         trophyBtn.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OVER, () => trophyBtn.setScale(2));
         trophyBtn.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT, () => trophyBtn.setScale(1.8));
 
-        // First visit: open the instructions unprompted, Wordle-style
+    }
+
+    private helpSeen(): boolean {
         try {
-            if (!localStorage.getItem('neko-help-seen')) {
-                localStorage.setItem('neko-help-seen', '1');
-                this.showHowToPlay('auto');
-            }
+            return localStorage.getItem('neko-help-seen') !== null;
         } catch {
-            // storage unavailable — the button is still there
+            // storage unavailable — treat as seen so the button still exists
+            return true;
         }
     }
 
@@ -96,7 +100,13 @@ class Start extends Phaser.Scene {
             .setOrigin(0)
             .setInteractive({ useHandCursor: closeOnTap });
         if (closeOnTap) {
-            dim.on(Phaser.Input.Events.GAMEOBJECT_POINTER_UP, () => overlay.destroy());
+            // A pointer that went down before the overlay existed is the tap
+            // that opened it — it must not immediately close it again
+            const openedAt = performance.now();
+            dim.on(Phaser.Input.Events.GAMEOBJECT_POINTER_UP, (pointer: Phaser.Input.Pointer) => {
+                if (pointer.downTime <= openedAt) return;
+                overlay.destroy();
+            });
         }
         overlay.add(dim);
         return overlay;
@@ -193,9 +203,9 @@ class Start extends Phaser.Scene {
         }).setOrigin(0.5));
     }
 
-    // source: 'auto' = first-visit unprompted open, 'button' = manual tap;
-    // lets funnels filter to genuinely new players
-    private showHowToPlay(source: 'auto' | 'button'): void {
+    // source: 'auto' = shown on the way into a first game, 'button' = manual
+    // tap; lets funnels filter to genuinely new players
+    private showHowToPlay(source: 'auto' | 'button'): Phaser.GameObjects.Container {
         posthog.capture({ distinctId, event: 'how to play viewed', properties: { source } });
         const overlay = this.makeOverlay();
         const centerX = GAME_WIDTH / 2;
@@ -295,7 +305,7 @@ class Start extends Phaser.Scene {
             wordWrap: { width: GAME_WIDTH - 32 },
         }).setOrigin(0.5));
 
-        overlay.add(this.add.text(centerX, GAME_HEIGHT - 50, 'TAP ANYWHERE TO CLOSE', {
+        overlay.add(this.add.text(centerX, GAME_HEIGHT - 50, source === 'auto' ? 'TAP ANYWHERE TO PLAY' : 'TAP ANYWHERE TO CLOSE', {
             fontFamily: 'PixelFont',
             resolution: textResolution(),
             fontSize: '11px',
@@ -358,6 +368,8 @@ class Start extends Phaser.Scene {
             at(6200, runDemo);
         };
         runDemo();
+
+        return overlay;
     }
 
     private burst(overlay: Phaser.GameObjects.Container, x: number, y: number, tint?: number): void {
@@ -403,6 +415,19 @@ class Start extends Phaser.Scene {
     }
 
     startGame(mode: 'endless' | 'daily'): void {
+        // First game ever: the tutorial appears on the way in, and dismissing
+        // it continues into the game they asked for
+        if (!this.helpSeen()) {
+            try {
+                localStorage.setItem('neko-help-seen', '1');
+            } catch {
+                // storage unavailable
+            }
+            this.showHowToPlay('auto').once(Phaser.GameObjects.Events.DESTROY, () => {
+                if (this.scene.isActive()) this.startGame(mode);
+            });
+            return;
+        }
         GAME_STATE.mode = mode;
         posthog.capture({
             distinctId,
