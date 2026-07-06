@@ -66,11 +66,7 @@ class Start extends Phaser.Scene {
             posthog.capture({ distinctId, event: 'play button clicked', properties: { mode: 'endless' } });
             this.showEndlessChooser();
         });
-        // New players get the tutorial on their first game start instead;
-        // the button is a re-read affordance so it only shows after that
-        if (this.helpSeen()) {
-            this.addButton(centerX, GAME_HEIGHT - 110, 'button_dark', 'HOW TO PLAY', () => this.showHowToPlay('button'));
-        }
+        this.addButton(centerX, GAME_HEIGHT - 110, 'button_dark', 'HOW TO PLAY', () => this.showHowToPlay('button'));
 
         this.add.text(centerX, GAME_HEIGHT - 50, 'M TO MUTE', {
             fontFamily: 'PixelFont',
