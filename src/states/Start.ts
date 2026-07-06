@@ -197,7 +197,7 @@ class Start extends Phaser.Scene {
     // lets funnels filter to genuinely new players
     private showHowToPlay(source: 'auto' | 'button'): void {
         posthog.capture({ distinctId, event: 'how to play viewed', properties: { source } });
-        const overlay = this.makeOverlay(false);
+        const overlay = this.makeOverlay();
         const centerX = GAME_WIDTH / 2;
         const isTouch = navigator.maxTouchPoints > 0;
 
@@ -210,15 +210,7 @@ class Start extends Phaser.Scene {
             strokeThickness: 6,
         }).setOrigin(0.5));
 
-        const step = this.add.text(centerX, 140, '', {
-            fontFamily: 'PixelFont',
-            resolution: textResolution(),
-            fontSize: '11px',
-            color: '#f2d032',
-        }).setOrigin(0.5);
-        overlay.add(step);
-
-        const caption = this.add.text(centerX, 190, '', {
+        const caption = this.add.text(centerX, 170, '', {
             fontFamily: 'PixelFont',
             resolution: textResolution(),
             fontSize: '14px',
@@ -294,20 +286,7 @@ class Start extends Phaser.Scene {
             };
         }
 
-        // Escape hatch (small and out of the way — the point is to do the moves)
-        const skip = this.add.text(GAME_WIDTH - 20, 20, 'SKIP', {
-            fontFamily: 'PixelFont',
-            resolution: textResolution(),
-            fontSize: '11px',
-            color: '#93ab88',
-        }).setOrigin(1, 0).setInteractive({ useHandCursor: true });
-        skip.on(Phaser.Input.Events.GAMEOBJECT_POINTER_UP, (pointer: Phaser.Input.Pointer) => {
-            if (Math.max(Math.abs(pointer.upX - pointer.downX), Math.abs(pointer.upY - pointer.downY)) > 12) return;
-            overlay.destroy();
-        });
-        overlay.add(skip);
-
-        overlay.add(this.add.text(centerX, GAME_HEIGHT - 70, 'A NEW DAILY PUZZLE EVERY DAY AT MIDNIGHT', {
+        overlay.add(this.add.text(centerX, GAME_HEIGHT - 90, 'A NEW DAILY PUZZLE EVERY DAY AT MIDNIGHT', {
             fontFamily: 'PixelFont',
             resolution: textResolution(),
             fontSize: '11px',
@@ -316,154 +295,69 @@ class Start extends Phaser.Scene {
             wordWrap: { width: GAME_WIDTH - 32 },
         }).setOrigin(0.5));
 
-        // ---- the tutorial is interactive: the player must make each move ----
-        let awaiting: 'right' | 'up' | null = null;
-        let stage = 0;
+        overlay.add(this.add.text(centerX, GAME_HEIGHT - 50, 'TAP ANYWHERE TO CLOSE', {
+            fontFamily: 'PixelFont',
+            resolution: textResolution(),
+            fontSize: '11px',
+            color: '#f2d032',
+        }).setOrigin(0.5));
 
+        // ---- self-playing demo: three quick beats, loops until dismissed ----
         const at = (ms: number, fn: () => void) => this.time.delayedCall(ms, () => {
             if (overlay.active) fn();
         });
 
-        const promptRight = isTouch ? 'SWIPE RIGHT' : 'PRESS THE RIGHT ARROW KEY';
-        const promptUp = isTouch ? 'SWIPE UP' : 'PRESS THE UP ARROW KEY';
+        const moveWord = isTouch ? 'SWIPE' : 'ARROW KEYS';
 
-        // An input made a beat too early (mid-animation) is buffered and
-        // honored when the next step arms, so eager players aren't ignored
-        let pending: { dir: 'left' | 'right' | 'up' | 'down'; time: number } | null = null;
-        const arm = (dir: 'right' | 'up') => {
-            pulse(dir);
-            if (pending && pending.dir === dir && this.time.now - pending.time < 2500) {
-                pending = null;
-                at(300, advance);
-                return;
-            }
-            pending = null;
-            awaiting = dir;
-        };
+        const runDemo = () => {
+            if (!overlay.active) return;
+            cat.setPosition(cellX(0), rowY(1)).setAlpha(1);
+            fishA.setScale(fishScale);
+            fishB.setScale(fishScale);
+            hearts.forEach(h => h.setAlpha(1));
 
-        const begin1 = () => {
-            step.setText('STEP 1 OF 3');
-            caption.setText(`YOUR TURN: ${promptRight}
-TO MOVE NEKO THE CAT`);
-            arm('right');
-        };
-        const begin2 = () => {
-            step.setText('STEP 2 OF 3');
-            caption.setText(`NOW ${promptRight} AGAIN...`);
-            arm('right');
-        };
-        const begin3 = () => {
-            step.setText('STEP 3 OF 3');
-            caption.setText(`ONE FISH LEFT! ${promptUp}
-TO GRAB IT`);
-            arm('up');
-        };
+            caption.setText(`${moveWord} TO MOVE — NEKO SLIDES\nUNTIL A FISH STOPS HIM`);
+            pulse('right');
+            at(400, () => this.tweens.add({
+                targets: cat, x: cellX(4), duration: 450, ease: 'Linear',
+                onComplete: () => {
+                    if (!overlay.active) return;
+                    this.burst(overlay, cellX(4), rowY(1));
+                    this.tweens.add({ targets: fishA, scale: 0, duration: 150 });
+                },
+            }));
 
-        const advance = () => {
-            stage += 1;
-            if (stage === 1) {
-                this.tweens.add({
-                    targets: cat, x: cellX(4), duration: 700, ease: 'Linear',
-                    onComplete: () => {
-                        if (!overlay.active) return;
-                        this.burst(overlay, cellX(4), rowY(1));
-                        this.tweens.add({ targets: fishA, scale: 0, duration: 150 });
-                        caption.setText('HE CAUGHT A FISH! FISH STOP HIM.\nCATCH EVERY FISH TO WIN THE LEVEL');
-                        at(2800, begin2);
-                    },
-                });
-            } else if (stage === 2) {
-                this.tweens.add({
-                    targets: cat, x: cellX(6) + tile / 2 - 10, duration: 350, ease: 'Linear',
-                    onComplete: () => {
-                        if (!overlay.active) return;
-                        cat.setAlpha(0);
-                        this.burst(overlay, cellX(6) + tile / 2, rowY(1), 0xff7d6a);
-                        hearts[2].setAlpha(0.2);
-                        caption.setText('OUCH! NO FISH THAT WAY = WALL CRASH.\nA CRASH COSTS ONE HEART');
-                        at(2800, () => {
-                            cat.setPosition(cellX(4), rowY(1)).setAlpha(1);
-                            begin3();
-                        });
-                    },
-                });
-            } else {
-                this.tweens.add({
-                    targets: cat, y: rowY(0), duration: 350, ease: 'Linear',
-                    onComplete: () => {
-                        if (!overlay.active) return;
-                        this.burst(overlay, cellX(4), rowY(0));
-                        this.tweens.add({ targets: fishB, scale: 0, duration: 150 });
-                        step.setText('');
-                        caption.setText('ALL FISH CAUGHT — LEVEL CLEAR!\nYOU ARE READY');
-                        at(2200, () => overlay.destroy());
-                    },
-                });
-            }
-        };
+            at(2000, () => {
+                caption.setText('NO FISH AHEAD? HE CRASHES.\nA CRASH COSTS ONE HEART');
+                pulse('right');
+            });
+            at(2400, () => this.tweens.add({
+                targets: cat, x: cellX(6) + tile / 2 - 10, duration: 350, ease: 'Linear',
+                onComplete: () => {
+                    if (!overlay.active) return;
+                    cat.setAlpha(0);
+                    this.burst(overlay, cellX(6) + tile / 2, rowY(1), 0xff7d6a);
+                    hearts[2].setAlpha(0.2);
+                },
+            }));
 
-        const wrongInput = () => {
-            this.tweens.add({ targets: caption, x: centerX - 7, duration: 60, yoyo: true, repeat: 3 });
-            if (awaiting) pulse(awaiting);
-        };
+            at(4000, () => {
+                cat.setPosition(cellX(4), rowY(1)).setAlpha(1);
+                caption.setText('CATCH EVERY FISH\nTO CLEAR THE PUZZLE');
+                pulse('up');
+            });
+            at(4400, () => this.tweens.add({
+                targets: cat, y: rowY(0), duration: 350, ease: 'Linear',
+                onComplete: () => {
+                    if (!overlay.active) return;
+                    this.burst(overlay, cellX(4), rowY(0));
+                    this.tweens.add({ targets: fishB, scale: 0, duration: 150 });
+                },
+            }));
 
-        const onDir = (dir: 'left' | 'right' | 'up' | 'down') => {
-            if (!awaiting) {
-                pending = { dir, time: this.time.now };
-                return;
-            }
-            if (dir !== awaiting) {
-                wrongInput();
-                return;
-            }
-            awaiting = null;
-            advance();
+            at(6200, runDemo);
         };
-
-        const keyMap: Record<string, 'left' | 'right' | 'up' | 'down'> = {
-            ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down',
-            a: 'left', d: 'right', w: 'up', s: 'down',
-        };
-        const onKey = (event: KeyboardEvent) => {
-            const dir = keyMap[event.key];
-            if (dir) onDir(dir);
-        };
-        this.input.keyboard?.on('keydown', onKey);
-
-        let downX = Number.NaN;
-        let downY = 0;
-        const onPointerDown = (pointer: Phaser.Input.Pointer) => {
-            downX = pointer.x;
-            downY = pointer.y;
-        };
-        const onPointerUp = (pointer: Phaser.Input.Pointer) => {
-            if (Number.isNaN(downX)) return; // gesture began before the tutorial opened
-            const dx = pointer.x - downX;
-            const dy = pointer.y - downY;
-            downX = Number.NaN;
-            if (Math.max(Math.abs(dx), Math.abs(dy)) < 40) return;
-            onDir(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'));
-        };
-        this.input.on(Phaser.Input.Events.POINTER_DOWN, onPointerDown);
-        this.input.on(Phaser.Input.Events.POINTER_UP, onPointerUp);
-
-        // idle nudge so the player always knows what to do next
-        const pulseTimer = this.time.addEvent({
-            delay: 1800,
-            loop: true,
-            callback: () => {
-                if (awaiting) pulse(awaiting);
-            },
-        });
-
-        overlay.once(Phaser.GameObjects.Events.DESTROY, () => {
-            pulseTimer.remove();
-            this.input.keyboard?.off('keydown', onKey);
-            this.input.off(Phaser.Input.Events.POINTER_DOWN, onPointerDown);
-            this.input.off(Phaser.Input.Events.POINTER_UP, onPointerUp);
-        });
-
-        begin1();
+        runDemo();
     }
 
     private burst(overlay: Phaser.GameObjects.Container, x: number, y: number, tint?: number): void {
