@@ -4,9 +4,12 @@ import { GAME_STATE } from '../utils/GameState';
 import { todayDateLabel } from '../utils/Daily';
 import { addSky } from '../utils/Sky';
 import { getEndlessBest, recordEndlessScore } from '../utils/HighScores';
+import { buildEndlessShareMessage } from '../utils/Share';
 import { posthog, distinctId } from '../utils/posthog';
 
 class GameOver extends Phaser.Scene {
+    private shareLabel?: Phaser.GameObjects.Text;
+
     constructor() {
         super({ key: 'GameOver' });
     }
@@ -57,6 +60,7 @@ class GameOver extends Phaser.Scene {
             },
         });
 
+        let nextY = 440;
         if (GAME_STATE.mode === 'endless') {
             const isNewBest = recordEndlessScore(GAME_STATE.difficulty, GAME_STATE.score);
             if (isNewBest) {
@@ -79,9 +83,14 @@ class GameOver extends Phaser.Scene {
                 stroke: '#0c100a',
                 strokeThickness: 4,
             }).setOrigin(0.5);
+
+            this.shareLabel = this.addButton(centerX, nextY, 'button_dark', isNewBest ? 'SHARE NEW BEST' : 'SHARE', () => {
+                void this.shareEndless(isNewBest);
+            });
+            nextY += 70;
         }
 
-        this.addButton(centerX, 440, 'button_red', 'RETRY', () => {
+        this.addButton(centerX, nextY, 'button_red', 'RETRY', () => {
             posthog.capture({
                 distinctId,
                 event: 'game retried',
@@ -89,10 +98,34 @@ class GameOver extends Phaser.Scene {
             });
             this.goTo('Play');
         });
-        this.addButton(centerX, 510, 'button_dark', 'MENU', () => this.goTo('Start'));
+        this.addButton(centerX, nextY + 70, 'button_dark', 'MENU', () => this.goTo('Start'));
     }
 
-    private addButton(x: number, y: number, texture: string, label: string, onClick: () => void): void {
+    private async shareEndless(isNewBest: boolean): Promise<void> {
+        const message = buildEndlessShareMessage(GAME_STATE.score, GAME_STATE.difficulty, isNewBest);
+        const properties = {
+            mode: 'endless',
+            score: GAME_STATE.score,
+            difficulty: GAME_STATE.difficulty,
+            new_best: isNewBest,
+        };
+        try {
+            const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+            if (isMobile && navigator.share) {
+                await navigator.share({ text: message });
+                posthog.capture({ distinctId, event: 'result shared', properties: { ...properties, method: 'native_share' } });
+                return;
+            }
+            await navigator.clipboard.writeText(message);
+            posthog.capture({ distinctId, event: 'result shared', properties: { ...properties, method: 'clipboard' } });
+            this.shareLabel?.setText('COPIED!');
+            this.time.delayedCall(1500, () => this.shareLabel?.setText(isNewBest ? 'SHARE NEW BEST' : 'SHARE'));
+        } catch {
+            // share sheet dismissed or clipboard denied — nothing to record
+        }
+    }
+
+    private addButton(x: number, y: number, texture: string, label: string, onClick: () => void): Phaser.GameObjects.Text {
         const pill = this.add.image(x, y, texture).setScale(1.8).setInteractive({ useHandCursor: true });
         // Taps only: a leftover swipe from gameplay must not click through
         pill.on(Phaser.Input.Events.GAMEOBJECT_POINTER_UP, (pointer: Phaser.Input.Pointer) => {
@@ -101,7 +134,7 @@ class GameOver extends Phaser.Scene {
         });
         pill.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OVER, () => pill.setTint(0xddeecc));
         pill.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT, () => pill.clearTint());
-        this.add.text(x, y, label, {
+        return this.add.text(x, y, label, {
             fontFamily: 'PixelFont',
             resolution: textResolution(),
             fontSize: '15px',

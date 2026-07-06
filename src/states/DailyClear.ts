@@ -79,11 +79,11 @@ class DailyClear extends Phaser.Scene {
             const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
             if (isMobile && navigator.share) {
                 await navigator.share({ text: message });
-                posthog.capture({ distinctId, event: 'result shared', properties: { method: 'native_share', score: GAME_STATE.score } });
+                posthog.capture({ distinctId, event: 'result shared', properties: { mode: 'daily', method: 'native_share', score: GAME_STATE.score } });
                 return;
             }
             await navigator.clipboard.writeText(message);
-            posthog.capture({ distinctId, event: 'result shared', properties: { method: 'clipboard', score: GAME_STATE.score } });
+            posthog.capture({ distinctId, event: 'result shared', properties: { mode: 'daily', method: 'clipboard', score: GAME_STATE.score } });
             this.shareLabel?.setText('COPIED!');
             this.time.delayedCall(1500, () => this.shareLabel?.setText('SHARE'));
         } catch {
