@@ -28,6 +28,20 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
     }
 };
 
+// Phaser 3.60 calls AudioContext.resume() without a catch when the tab
+// regains visibility; Chrome rejects it with "Failed to start the audio
+// device" if no output is usable (unplugged headphones, remote desktop,
+// device held by another app). Harmless — sound returns on the next tap
+// via Phaser's input unlock — so keep it out of the console and error log.
+window.addEventListener('unhandledrejection', (event) => {
+    const reason: unknown = event.reason;
+    if (reason instanceof DOMException
+        && reason.name === 'InvalidStateError'
+        && /audio device/i.test(reason.message)) {
+        event.preventDefault();
+    }
+});
+
 const game = new Phaser.Game(gameConfig);
 
 // Handy for debugging and driving the game from tests

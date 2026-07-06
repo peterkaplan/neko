@@ -14,6 +14,18 @@ if (enabled) {
         autocapture: false,
         capture_pageview: true,
         capture_exceptions: true,
+        // Chrome rejects AudioContext.resume() on tab focus when no audio
+        // output is usable (unplugged headphones, remote desktop). Handled
+        // in index.ts and self-heals on the next tap — pure noise here.
+        before_send: (event) => {
+            if (event?.event === '$exception') {
+                const exceptions: Array<{ value?: string }> = event.properties?.$exception_list ?? [];
+                if (exceptions.some(e => /failed to start the audio device/i.test(e?.value ?? ''))) {
+                    return null;
+                }
+            }
+            return event;
+        },
     });
 }
 
