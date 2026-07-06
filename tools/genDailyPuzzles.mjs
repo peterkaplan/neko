@@ -13,8 +13,10 @@ const BOARD_WIDTH = 13;  // interior 11 cols
 const BOARD_HEIGHT = 13; // interior 11 rows
 const JAR_COUNT = 14;
 const PUZZLE_COUNT = 7;
-// Difficulty band: at most this many valid complete orderings out of the 14!
-// possible — fewer valid orderings = harder puzzle
+// Difficulty band: valid complete orderings out of the 14! possible — fewer
+// valid orderings = harder puzzle. The floor keeps out near-unsolvable brutes
+// (1-2 ordering puzzles drew complaints), the ceiling keeps out trivial boards
+const MIN_SOLUTION_COUNT = 5;
 const MAX_SOLUTION_COUNT = 40;
 
 function mulberry32(seed) {
@@ -94,10 +96,9 @@ function solve(start, jars) {
 }
 
 function generate() {
-    // Seed picked so the puzzle in each weekday slot lands at a sane
-    // difficulty — slot 4 (day % 7 === 4) was a 2-ordering brute on the
-    // old seed and got complaints on Jul 6 2026
-    const rnd = mulberry32(20260715);
+    // Seed picked so every slot clears the difficulty floor and slot 4
+    // (day % 7 === 4, the day that drew complaints on Jul 6 2026) stays easy
+    const rnd = mulberry32(20260725);
     const puzzles = [];
     let attempts = 0;
 
@@ -121,7 +122,7 @@ function generate() {
 
         const result = solve(start, jars);
         if (!result.solvable) continue;
-        if (result.solutionCount > MAX_SOLUTION_COUNT) continue;
+        if (result.solutionCount < MIN_SOLUTION_COUNT || result.solutionCount > MAX_SOLUTION_COUNT) continue;
 
         puzzles.push({ start, jars, solutionCount: result.solutionCount, solution: result.oneSolution });
         console.log(`  puzzle ${puzzles.length}: ${result.solutionCount} valid orderings (attempt ${attempts})`);

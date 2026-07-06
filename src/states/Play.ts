@@ -4,6 +4,7 @@ import { addSky, preloadSky } from '../utils/Sky';
 import { recordEndlessScore } from '../utils/HighScores';
 import { GAME_STATE, resetGameState } from '../utils/GameState';
 import { markTodayPlayed } from '../utils/Daily';
+import { applyMute, toggleMute } from '../utils/Mute';
 import { LevelManager } from '../utils/LevelManager';
 import BoardInitializer from '../utils/BoardInitializer';
 import Scoreboard from '../utils/Scoreboard';
@@ -56,8 +57,9 @@ class Play extends Phaser.Scene {
         this.cameras.main.fadeIn(250, 0, 0, 0);
         this.drawBackdrop();
         this.setupSwipeInput();
+        applyMute(this);
         this.input.keyboard?.on('keydown-M', () => {
-            this.sound.mute = !this.sound.mute;
+            toggleMute(this);
         });
 
         this.emitter = this.add.particles(0, 0, 'particle', {

@@ -5,6 +5,7 @@ import { getDailyStats, getTodayResult, isTodayCompleted, todayDateLabel } from 
 import { addSky, preloadSky } from '../utils/Sky';
 import { getEndlessBest } from '../utils/HighScores';
 import { renderDailyStats } from '../utils/StatsPanel';
+import { applyMute, isMuted, toggleMute } from '../utils/Mute';
 import { posthog, distinctId } from '../utils/posthog';
 
 // Mini board for the How to Play demo
@@ -30,6 +31,8 @@ class Start extends Phaser.Scene {
         this.load.image('logo', 'assets/images/logo.png');
         this.load.image('key_right', 'assets/generated/key_right.png');
         if (!this.textures.exists('trophy')) this.load.image('trophy', 'assets/generated/trophy.png');
+        if (!this.textures.exists('sound_on')) this.load.image('sound_on', 'assets/generated/sound_on.png');
+        if (!this.textures.exists('sound_off')) this.load.image('sound_off', 'assets/generated/sound_off.png');
     }
 
     create(): void {
@@ -68,12 +71,29 @@ class Start extends Phaser.Scene {
         });
         this.addButton(centerX, GAME_HEIGHT - 110, 'button_dark', 'HOW TO PLAY', () => this.showHowToPlay('button'));
 
-        this.add.text(centerX, GAME_HEIGHT - 50, 'M TO MUTE', {
-            fontFamily: 'PixelFont',
-            resolution: textResolution(),
-            fontSize: '11px',
-            color: '#1f4e6e',
-        }).setOrigin(0.5);
+        applyMute(this);
+        const isTouch = navigator.maxTouchPoints > 0;
+        if (!isTouch) {
+            this.add.text(centerX, GAME_HEIGHT - 50, 'M TO MUTE', {
+                fontFamily: 'PixelFont',
+                resolution: textResolution(),
+                fontSize: '11px',
+                color: '#1f4e6e',
+            }).setOrigin(0.5);
+        }
+        // Speaker in the top-left corner toggles sound, mirroring the trophy
+        const muteBtn = this.add.image(44, 44, isMuted() ? 'sound_off' : 'sound_on')
+            .setScale(1.8)
+            .setInteractive({ useHandCursor: true });
+        muteBtn.on(Phaser.Input.Events.GAMEOBJECT_POINTER_UP, (pointer: Phaser.Input.Pointer) => {
+            if (Math.max(Math.abs(pointer.upX - pointer.downX), Math.abs(pointer.upY - pointer.downY)) > 12) return;
+            muteBtn.setTexture(toggleMute(this) ? 'sound_off' : 'sound_on');
+        });
+        muteBtn.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OVER, () => muteBtn.setScale(2));
+        muteBtn.on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT, () => muteBtn.setScale(1.8));
+        this.input.keyboard?.on('keydown-M', () => {
+            muteBtn.setTexture(toggleMute(this) ? 'sound_off' : 'sound_on');
+        });
 
         // Trophy in the top-right corner opens the stats screen
         const trophyBtn = this.add.image(GAME_WIDTH - 44, 44, 'trophy')

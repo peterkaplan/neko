@@ -315,6 +315,45 @@ function trophy() {
     }, 2).save('trophy.png');
 }
 
+// Speaker with sound waves / with a mute cross, for the mute toggle button
+const SPEAKER_ROWS = [
+    '................',
+    '........X.......',
+    '.......XX.......',
+    '......XXX..W....',
+    '..XXXXXXX...W...',
+    '..XXXXXXX.W..W..',
+    '..XXXXXXX.W..W..',
+    '..XXXXXXX.W..W..',
+    '..XXXXXXX...W...',
+    '......XXX..W....',
+    '.......XX.......',
+    '........X.......',
+    '................',
+];
+
+const SPEAKER_MUTED_ROWS = [
+    '................',
+    '........X.......',
+    '.......XX.......',
+    '......XXX.......',
+    '..XXXXXXX.M...M.',
+    '..XXXXXXX..M.M..',
+    '..XXXXXXX...M...',
+    '..XXXXXXX..M.M..',
+    '..XXXXXXX.M...M.',
+    '......XXX.......',
+    '.......XX.......',
+    '........X.......',
+    '................',
+];
+
+function soundIcons() {
+    const body = hex('#1f4e6e');
+    drawMap(SPEAKER_ROWS, { X: body, W: body }, 2).save('sound_on.png');
+    drawMap(SPEAKER_MUTED_ROWS, { X: body, M: hex('#c0392b') }, 2).save('sound_off.png');
+}
+
 function heart() {
     const s = new Sprite(12, 11);
     HEART_ROWS.forEach((row, y) => {
@@ -439,6 +478,7 @@ wallTexture();
 fishSvg();
 appIcon();
 trophy();
+soundIcons();
 heart();
 particle();
 keycap();
