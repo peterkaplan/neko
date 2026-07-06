@@ -32,9 +32,14 @@ if (enabled) {
 // Same call shape the PostHog wizard generated at the call sites; posthog-js
 // manages the player's identity itself, so distinctId is informational only.
 export const posthog = {
-    capture(payload: { distinctId?: string; event: string; properties?: Record<string, unknown> }): void {
+    capture(payload: { distinctId?: string; event: string; properties?: Record<string, unknown>; instant?: boolean }): void {
         if (!enabled) return;
-        posthogJs.capture(payload.event, payload.properties);
+        // instant: skip the batch queue and send via beacon, for events fired
+        // right before the player leaves (a mobile share, say) — a queued
+        // event dies with the tab if the app is switched away immediately
+        posthogJs.capture(payload.event, payload.properties, payload.instant
+            ? { transport: 'sendBeacon', send_instantly: true }
+            : undefined);
     },
 };
 

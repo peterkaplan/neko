@@ -113,11 +113,11 @@ class GameOver extends Phaser.Scene {
             const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
             if (isMobile && navigator.share) {
                 await navigator.share({ text: message });
-                posthog.capture({ distinctId, event: 'result shared', properties: { ...properties, method: 'native_share' } });
+                posthog.capture({ distinctId, event: 'result shared', properties: { ...properties, method: 'native_share' }, instant: true });
                 return;
             }
             await navigator.clipboard.writeText(message);
-            posthog.capture({ distinctId, event: 'result shared', properties: { ...properties, method: 'clipboard' } });
+            posthog.capture({ distinctId, event: 'result shared', properties: { ...properties, method: 'clipboard' }, instant: true });
             this.shareLabel?.setText('COPIED!');
             this.time.delayedCall(1500, () => this.shareLabel?.setText(isNewBest ? 'SHARE NEW BEST' : 'SHARE'));
         } catch {
