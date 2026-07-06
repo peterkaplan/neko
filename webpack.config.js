@@ -41,6 +41,8 @@ module.exports = (env, argv) => ({
         new CopyWebpackPlugin({
             patterns: [
                 { from: 'index.css', to: 'index.css' },
+                { from: 'robots.txt', to: 'robots.txt' },
+                { from: 'sitemap.xml', to: 'sitemap.xml' },
                 { from: 'assets/images/logo.png', to: 'assets/images/logo.png' },
                 // Runtime assets ship at stable (unhashed) paths and Phaser
                 // loads them by URL: a session on an old bundle keeps working

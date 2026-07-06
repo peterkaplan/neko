@@ -17,6 +17,16 @@ body {
     background: linear-gradient(#5aa9e2, #6cb5e9, #7cc0ee, #8ecdf4, #a5daf8);
 }
 
+/* Off-screen but crawlable — the page's only text content lives here */
+.seo-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
 #gameContainer {
     position: relative;
     width: 100%;
