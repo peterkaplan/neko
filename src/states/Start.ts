@@ -1,15 +1,4 @@
 import Phaser from 'phaser';
-import buttonDark from '../../assets/generated/button_dark.png';
-import buttonRed from '../../assets/generated/button_red.png';
-import catIdle from '../../assets/images/cat_right_idle.png';
-import fishSvg from '../../assets/generated/fish.svg';
-import logo from '../../assets/images/logo.png';
-import grassA from '../../assets/generated/grass_a.png';
-import grassB from '../../assets/generated/grass_b.png';
-import keyRight from '../../assets/generated/key_right.png';
-import particleImg from '../../assets/generated/particle.png';
-import heartImg from '../../assets/generated/heart.png';
-import trophyImg from '../../assets/generated/trophy.png';
 import { GAME_HEIGHT, GAME_WIDTH, textResolution } from '../utils/Constants';
 import { GAME_STATE } from '../utils/GameState';
 import { getDailyStats, getTodayResult, isTodayCompleted, todayDateLabel } from '../utils/Daily';
@@ -30,17 +19,17 @@ class Start extends Phaser.Scene {
 
     preload(): void {
         preloadSky(this);
-        if (!this.textures.exists('button_dark')) this.load.image('button_dark', buttonDark);
-        if (!this.textures.exists('button_red')) this.load.image('button_red', buttonRed);
-        if (!this.textures.exists('grass_a')) this.load.image('grass_a', grassA);
-        if (!this.textures.exists('grass_b')) this.load.image('grass_b', grassB);
-        if (!this.textures.exists('particle')) this.load.image('particle', particleImg);
-        if (!this.textures.exists('heart')) this.load.image('heart', heartImg);
-        this.load.image('title_cat', catIdle);
-        if (!this.textures.exists('fish')) this.load.svg('fish', fishSvg, { width: 128, height: 128 });
-        this.load.image('logo', logo);
-        this.load.image('key_right', keyRight);
-        if (!this.textures.exists('trophy')) this.load.image('trophy', trophyImg);
+        if (!this.textures.exists('button_dark')) this.load.image('button_dark', 'assets/generated/button_dark.png');
+        if (!this.textures.exists('button_red')) this.load.image('button_red', 'assets/generated/button_red.png');
+        if (!this.textures.exists('grass_a')) this.load.image('grass_a', 'assets/generated/grass_a.png');
+        if (!this.textures.exists('grass_b')) this.load.image('grass_b', 'assets/generated/grass_b.png');
+        if (!this.textures.exists('particle')) this.load.image('particle', 'assets/generated/particle.png');
+        if (!this.textures.exists('heart')) this.load.image('heart', 'assets/generated/heart.png');
+        this.load.image('title_cat', 'assets/images/cat_right_idle.png');
+        if (!this.textures.exists('fish')) this.load.svg('fish', 'assets/generated/fish.svg', { width: 128, height: 128 });
+        this.load.image('logo', 'assets/images/logo.png');
+        this.load.image('key_right', 'assets/generated/key_right.png');
+        if (!this.textures.exists('trophy')) this.load.image('trophy', 'assets/generated/trophy.png');
     }
 
     create(): void {
@@ -69,7 +58,7 @@ class Start extends Phaser.Scene {
 
         this.addButton(centerX, GAME_HEIGHT - 250, 'button_red', `DAILY · ${todayDateLabel()}`, () => this.startGame('daily'));
         this.addButton(centerX, GAME_HEIGHT - 180, 'button_dark', 'ENDLESS', () => this.showEndlessChooser());
-        this.addButton(centerX, GAME_HEIGHT - 110, 'button_dark', 'HOW TO PLAY', () => this.showHowToPlay());
+        this.addButton(centerX, GAME_HEIGHT - 110, 'button_dark', 'HOW TO PLAY', () => this.showHowToPlay('button'));
 
         this.add.text(centerX, GAME_HEIGHT - 50, 'M TO MUTE', {
             fontFamily: 'PixelFont',
@@ -93,7 +82,7 @@ class Start extends Phaser.Scene {
         try {
             if (!localStorage.getItem('neko-help-seen')) {
                 localStorage.setItem('neko-help-seen', '1');
-                this.showHowToPlay();
+                this.showHowToPlay('auto');
             }
         } catch {
             // storage unavailable — the button is still there
@@ -204,8 +193,10 @@ class Start extends Phaser.Scene {
         }).setOrigin(0.5));
     }
 
-    private showHowToPlay(): void {
-        posthog.capture({ distinctId, event: 'how to play viewed' });
+    // source: 'auto' = first-visit unprompted open, 'button' = manual tap;
+    // lets funnels filter to genuinely new players
+    private showHowToPlay(source: 'auto' | 'button'): void {
+        posthog.capture({ distinctId, event: 'how to play viewed', properties: { source } });
         const overlay = this.makeOverlay(false);
         const centerX = GAME_WIDTH / 2;
         const isTouch = navigator.maxTouchPoints > 0;
