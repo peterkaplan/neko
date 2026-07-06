@@ -42,8 +42,14 @@ module.exports = (env, argv) => ({
             patterns: [
                 { from: 'index.css', to: 'index.css' },
                 { from: 'assets/images/logo.png', to: 'assets/images/logo.png' },
-                { from: 'assets/generated/fish.svg', to: 'assets/generated/fish.svg' },
-                { from: 'assets/generated/icon.png', to: 'assets/generated/icon.png' },
+                // Runtime assets ship at stable (unhashed) paths and Phaser
+                // loads them by URL: a session on an old bundle keeps working
+                // across redeploys (hashed files vanish, these don't)
+                { from: 'assets/generated', to: 'assets/generated' },
+                { from: 'assets/images/cat_left_idle.png', to: 'assets/images/cat_left_idle.png' },
+                { from: 'assets/images/cat_right_idle.png', to: 'assets/images/cat_right_idle.png' },
+                { from: 'assets/images/cat_jump_left.png', to: 'assets/images/cat_jump_left.png' },
+                { from: 'assets/images/cat_jump_right.png', to: 'assets/images/cat_jump_right.png' },
                 { from: 'assets/fonts', to: 'assets/fonts' },
             ],
         }),

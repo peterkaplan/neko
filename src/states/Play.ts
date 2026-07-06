@@ -1,24 +1,7 @@
 import Phaser from 'phaser';
 import { GameBoard } from '../objects/GameBoard';
-import catIdleLeft from '../../assets/images/cat_left_idle.png';
-import catIdleRight from '../../assets/images/cat_right_idle.png';
-import catJumpLeft from '../../assets/images/cat_jump_left.png';
-import catJumpRight from '../../assets/images/cat_jump_right.png';
-import grassA from '../../assets/generated/grass_a.png';
-import grassB from '../../assets/generated/grass_b.png';
-import grassC from '../../assets/generated/grass_c.png';
-import grassD from '../../assets/generated/grass_d.png';
-import wall from '../../assets/generated/wall.png';
-import particle from '../../assets/generated/particle.png';
-import heart from '../../assets/generated/heart.png';
-import buttonDark from '../../assets/generated/button_dark.png';
 import { addSky, preloadSky } from '../utils/Sky';
 import { recordEndlessScore } from '../utils/HighScores';
-import fishSvg from '../../assets/generated/fish.svg';
-import sfxJump from '../../assets/generated/sfx_jump.wav';
-import sfxCollect from '../../assets/generated/sfx_collect.wav';
-import sfxDeath from '../../assets/generated/sfx_death.wav';
-import sfxClear from '../../assets/generated/sfx_clear.wav';
 import { GAME_STATE, resetGameState } from '../utils/GameState';
 import { markTodayPlayed } from '../utils/Daily';
 import { LevelManager } from '../utils/LevelManager';
@@ -47,24 +30,24 @@ class Play extends Phaser.Scene {
     preload(): void {
         this.cursors = this.input?.keyboard?.createCursorKeys();
         this.wasd = this.input?.keyboard?.addKeys('W,A,S,D') as Play['wasd'];
-        this.load.image('cat_idle_left', catIdleLeft);
-        this.load.image('cat_idle_right', catIdleRight);
-        if (!this.textures.exists('fish')) this.load.svg('fish', fishSvg, { width: 128, height: 128 });
-        this.load.image('grass_a', grassA);
-        this.load.image('grass_b', grassB);
-        this.load.image('grass_c', grassC);
-        this.load.image('grass_d', grassD);
-        this.load.image('wall', wall);
-        this.load.image('particle', particle);
-        this.load.image('heart', heart);
+        this.load.image('cat_idle_left', 'assets/images/cat_left_idle.png');
+        this.load.image('cat_idle_right', 'assets/images/cat_right_idle.png');
+        if (!this.textures.exists('fish')) this.load.svg('fish', 'assets/generated/fish.svg', { width: 128, height: 128 });
+        this.load.image('grass_a', 'assets/generated/grass_a.png');
+        this.load.image('grass_b', 'assets/generated/grass_b.png');
+        this.load.image('grass_c', 'assets/generated/grass_c.png');
+        this.load.image('grass_d', 'assets/generated/grass_d.png');
+        this.load.image('wall', 'assets/generated/wall.png');
+        this.load.image('particle', 'assets/generated/particle.png');
+        this.load.image('heart', 'assets/generated/heart.png');
         preloadSky(this);
-        if (!this.textures.exists('button_dark')) this.load.image('button_dark', buttonDark);
-        this.load.audio('sfx_jump', sfxJump);
-        this.load.audio('sfx_collect', sfxCollect);
-        this.load.audio('sfx_death', sfxDeath);
-        this.load.audio('sfx_clear', sfxClear);
-        this.load.spritesheet('catJumpLeft', catJumpLeft, { frameWidth: 225, frameHeight: 225 });
-        this.load.spritesheet('catJumpRight', catJumpRight, { frameWidth: 225, frameHeight: 225 });
+        if (!this.textures.exists('button_dark')) this.load.image('button_dark', 'assets/generated/button_dark.png');
+        this.load.audio('sfx_jump', 'assets/generated/sfx_jump.wav');
+        this.load.audio('sfx_collect', 'assets/generated/sfx_collect.wav');
+        this.load.audio('sfx_death', 'assets/generated/sfx_death.wav');
+        this.load.audio('sfx_clear', 'assets/generated/sfx_clear.wav');
+        this.load.spritesheet('catJumpLeft', 'assets/images/cat_jump_left.png', { frameWidth: 225, frameHeight: 225 });
+        this.load.spritesheet('catJumpRight', 'assets/images/cat_jump_right.png', { frameWidth: 225, frameHeight: 225 });
     }
 
     create(): void {

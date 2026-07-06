@@ -1,16 +1,13 @@
 import Phaser from 'phaser';
-import cloudA from '../../assets/generated/cloud_a.png';
-import cloudB from '../../assets/generated/cloud_b.png';
-import cloudC from '../../assets/generated/cloud_c.png';
 import { GAME_HEIGHT, GAME_WIDTH } from './Constants';
 
 // Deeper blue up top, hazier toward the horizon
 const SKY_BANDS = [0x5aa9e2, 0x6cb5e9, 0x7cc0ee, 0x8ecdf4, 0xa5daf8];
 
 export function preloadSky(scene: Phaser.Scene): void {
-    if (!scene.textures.exists('cloud_a')) scene.load.image('cloud_a', cloudA);
-    if (!scene.textures.exists('cloud_b')) scene.load.image('cloud_b', cloudB);
-    if (!scene.textures.exists('cloud_c')) scene.load.image('cloud_c', cloudC);
+    if (!scene.textures.exists('cloud_a')) scene.load.image('cloud_a', 'assets/generated/cloud_a.png');
+    if (!scene.textures.exists('cloud_b')) scene.load.image('cloud_b', 'assets/generated/cloud_b.png');
+    if (!scene.textures.exists('cloud_c')) scene.load.image('cloud_c', 'assets/generated/cloud_c.png');
 }
 
 // Full-canvas banded pixel sky with clouds drifting slowly left-to-right,
