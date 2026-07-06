@@ -56,8 +56,16 @@ class Start extends Phaser.Scene {
             ease: 'Sine.easeInOut',
         });
 
-        this.addButton(centerX, GAME_HEIGHT - 250, 'button_red', `DAILY · ${todayDateLabel()}`, () => this.startGame('daily'));
-        this.addButton(centerX, GAME_HEIGHT - 180, 'button_dark', 'ENDLESS', () => this.showEndlessChooser());
+        // Fires on the menu tap itself (before the tutorial or difficulty
+        // chooser), so pageview → click-through is measurable directly
+        this.addButton(centerX, GAME_HEIGHT - 250, 'button_red', `DAILY · ${todayDateLabel()}`, () => {
+            posthog.capture({ distinctId, event: 'play button clicked', properties: { mode: 'daily' } });
+            this.startGame('daily');
+        });
+        this.addButton(centerX, GAME_HEIGHT - 180, 'button_dark', 'ENDLESS', () => {
+            posthog.capture({ distinctId, event: 'play button clicked', properties: { mode: 'endless' } });
+            this.showEndlessChooser();
+        });
         // New players get the tutorial on their first game start instead;
         // the button is a re-read affordance so it only shows after that
         if (this.helpSeen()) {
