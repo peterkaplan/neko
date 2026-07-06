@@ -330,10 +330,10 @@ class Start extends Phaser.Scene {
             fishB.setScale(fishScale);
             hearts.forEach(h => h.setAlpha(1));
 
-            caption.setText(`${moveWord} TO MOVE — NEKO SLIDES\nUNTIL A FISH STOPS HIM`);
+            caption.setText(`${moveWord} TO MOVE — NEKO SLIDES\nUNTIL A FISH STOPS NEKO`);
             pulse('right');
-            at(400, () => this.tweens.add({
-                targets: cat, x: cellX(4), duration: 450, ease: 'Linear',
+            at(700, () => this.tweens.add({
+                targets: cat, x: cellX(4), duration: 600, ease: 'Linear',
                 onComplete: () => {
                     if (!overlay.active) return;
                     this.burst(overlay, cellX(4), rowY(1));
@@ -341,12 +341,12 @@ class Start extends Phaser.Scene {
                 },
             }));
 
-            at(2000, () => {
-                caption.setText('NO FISH AHEAD? HE CRASHES.\nA CRASH COSTS ONE HEART');
+            at(3000, () => {
+                caption.setText('NO FISH AHEAD? NEKO CRASHES.\nA CRASH COSTS ONE HEART');
                 pulse('right');
             });
-            at(2400, () => this.tweens.add({
-                targets: cat, x: cellX(6) + tile / 2 - 10, duration: 350, ease: 'Linear',
+            at(3600, () => this.tweens.add({
+                targets: cat, x: cellX(6) + tile / 2 - 10, duration: 500, ease: 'Linear',
                 onComplete: () => {
                     if (!overlay.active) return;
                     cat.setAlpha(0);
@@ -355,13 +355,13 @@ class Start extends Phaser.Scene {
                 },
             }));
 
-            at(4000, () => {
+            at(5600, () => {
                 cat.setPosition(cellX(4), rowY(1)).setAlpha(1);
                 caption.setText('CATCH EVERY FISH\nTO CLEAR THE PUZZLE');
                 pulse('up');
             });
-            at(4400, () => this.tweens.add({
-                targets: cat, y: rowY(0), duration: 350, ease: 'Linear',
+            at(6200, () => this.tweens.add({
+                targets: cat, y: rowY(0), duration: 500, ease: 'Linear',
                 onComplete: () => {
                     if (!overlay.active) return;
                     this.burst(overlay, cellX(4), rowY(0));
@@ -369,7 +369,7 @@ class Start extends Phaser.Scene {
                 },
             }));
 
-            at(6200, runDemo);
+            at(8600, runDemo);
         };
         runDemo();
 

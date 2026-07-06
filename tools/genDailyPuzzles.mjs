@@ -94,7 +94,10 @@ function solve(start, jars) {
 }
 
 function generate() {
-    const rnd = mulberry32(20260702);
+    // Seed picked so the puzzle in each weekday slot lands at a sane
+    // difficulty — slot 4 (day % 7 === 4) was a 2-ordering brute on the
+    // old seed and got complaints on Jul 6 2026
+    const rnd = mulberry32(20260715);
     const puzzles = [];
     let attempts = 0;
 
