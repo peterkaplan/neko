@@ -36,7 +36,9 @@ export function renderDailyStats(
             fontFamily: 'PixelFont',
             resolution: textResolution(),
             fontSize: '8px',
-            color: '#93ab88',
+            color: '#f4efe2',
+            stroke: '#0c100a',
+            strokeThickness: 3,
             align: 'center',
             lineSpacing: 4,
         }).setOrigin(0.5, 0));
@@ -47,6 +49,8 @@ export function renderDailyStats(
         resolution: textResolution(),
         fontSize: '11px',
         color: '#f2d032',
+        stroke: '#0c100a',
+        strokeThickness: 4,
     }).setOrigin(0.5));
 
     const maxCount = Math.max(1, ...stats.hearts);
